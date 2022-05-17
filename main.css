@@ -1,11 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Condensed&display=swap');
+
 body {
     background-color:cadetblue;
   }
+
 .content {
     padding: 10px;
+    padding-top: 20px;
     background-color: grey;
     color: white;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-radius: 5px;
+}
+
+#header-mid {
+    padding-left: 60px;
+}
+.name, .role {
+    font-family: 'Roboto', sans-serif;
+
+    padding-left: 60px;
+    font-size: 68px;
+    font-weight: 600;
+}
+
+.name {
+    color: white;
+}
+
+.role {
+    color: gray;
 }
 #nav-bar {
     list-style-type: none;
