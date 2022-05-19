@@ -1,48 +1,131 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Terry Fallows - Software Engineer</title>
+
+    <!-- Add futureproof favicons -->
+    <link href="https://uploads-ssl.webflow.com/618d068d04660411b63872f6/61a8a2935d913427d31de235_favicon.png" rel="shortcut icon" type="image/x-icon">
+   <link href="https://uploads-ssl.webflow.com/618d068d04660411b63872f6/61a8a299c6f16674367ab105_webclip.png" rel="apple-touch-icon">
+   
+    <!-- Bootstrap 5.2.0-beta1 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+
     <link rel="stylesheet" href="./main.css">
-    <title>Terry's Portfolio | Home Page</title>
-</head>
-<body>
-    <div id="nav-bar">
-        <ul>
-            <li><a class="active" href="./index.html">Home</a></li>
-            <li><a href="./projects.html">Projects</a></li>
-            <li><a href="./about.html">About</a></li>
-        </ul>
-    </div>
+  </head>
+  <body>
 
-    <br></br>
-    <br></br>
+       <!-- Bootstrap 5.2.0-beta1 JS libaries -->
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+       <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>
 
-    <!-- TODO: Restructure Website so entire portfolio is on one page with projects, about, and social media contacts (if any)-->
-    
-    <header style="margin-bottom:15px;">
-        <div id="header">
-            <div style="height:60px;background-color:#191a1d"></div>
-            <div class="header-mid-left" style="background-color:#191a1d;width:100%;padding-top:60px;padding-bottom:60px">
-                <p class="name">Terry Fallows</p>
-                <p class="role">Software Engineer</p>
-            </div>
-            <div class="header-mid-right">
-                <div class="description">
+      <main class="container-fluid">
+          <header>
+              <div id="header-top">
+                  <div id="header-mid">
+                      <div id="header-mid-inner">
+                          <div id="header-mid-inner-left">
+                              <div>
+                                  <span id="header-name">Terry Fallows</span>
+                              </div>
+                              <div>
+                                  <span id="header-desc">Software Engineer</span>
+                              </div>
+                          </div>
+                          <div id="header-mid-inner-right">
+                              <div id="header-profile">
+                                  <span id="profile-title">Trainee Full-Stack Software Engineer at futureproof</span>
+                                  <span id="profile-prof">Experience with scripting languages and backend development.</span>
+                              </div>
+                              <br></br>
+                          </div>
+
+                          <!-- TODO: Position Social Media icons below profile -->
+
+                          <nav id="social-nav">
+                              <div id="social-icons">
+                                  <div id="social-icons-inner">
+                                      <div class="social-icons-list">
+                                        <a href="https://cohorts.getfutureproof.co.uk/al-jazari" title="See our futureproof cohorts page!">
+                                            <img src="./img/fp-logo.svg" alt="See our futureproof cohorts page!">
+                                        </a>
+                                    </div>
+                                      </div>
+                                      <div class="social-icons-list">
+                                        <div class="social-icons-list">
+                                            <a class="bi bi-stack-overflow" href="_blank" title="Follow my Stack Overflow page!"></a>
+                                          </div>
+                                      </div>
+                                      <div class="social-icons-list">
+                                        <a class="bi bi-github" href="https://github.com/TheWeion" title="Follow my GitHub page!"></a>
+                                      </div>
+                                      <div class="social-icons-list">
+                                          <a class="bi bi-envelope-plus" href="mailto:ianterryfallows@gmail.com" title="Email Me!"></a>
+                                      </div>
+                                  </div>
+                              </div>
+                          </nav>
+                      </div>
+                  </div>
+
+                  <!-- TODO: Fix Arrowhead positioning issues -->
+                  <div id="header-arowhead">
+                    <span id="arrowhead"></span>
+                  </div>
+                  <!-- TODO: Design and implement code carousel -->
+                  <span id="code-carousel">
+                  </span>
+              </div>
+          </header>
+          <div id="main" class="container-fluid">
+              <div id="content1-h1">
+                  <br>
+                  <br>
+                  <br>
+                  <br>
+                  <br>
+                  <br>
+                  <br>
+                  <br>
+                  <span id="projects-h1">My Projects</span>
+              </div>
+              
+              <div class="row row-cols-md-3 row-cols-sm-1 mb-3">
+                <div class="col">
+                    <article class="card p-3">
+                        <img src="./img/img-al_jazariDemo.png" alt="Pasta">
+                        <h3>Al-Jazari HTML Demo</h3>
+                        <p>This small site showcases my ability to utilise basic HTML to design a website.</p>
+                        <section>
+                            <button onclick="document.location='https://aljazari-cohort-terry.netlify.app'" class="btn btn-primary">View Details</button>
+                        </section>
+                    </article>
                 </div>
-            </div>
-        </div>
-    </header>
-
-    <div class="content">
-        <p>Hello my name is Terry and welcome to my portfolio, here I will be showcasing all of my projects and achievements throughout my development at futureproof and beyond.
-
-            I love coding and find the challenge of developing new solutions to be fun and exciting.
-        </p>
-
-        <!-- <img src="./img/headshot.png" width="256px" alt="Headshot photo of myself." /> -->
-    </div>
-    <div class="languages-known"></div>
-</body>
+    
+                <div class="col">
+                    <article class="card p-3 ">
+                        <img src="./img/img-sportsTeamDemo.png" alt="Pepperoni Pizza"/>
+                        <h3>Sports Team Demo</h3>
+                        <p>This small site showcases my ability to utilise advanced HTML  with a colleague to design and deploy a website.</p>
+                        <section>
+                            <button onclick="document.location='https://sports-team-terry.netlify.app/'" class="btn btn-primary">View Details</button>
+                        </section>
+                    </article>
+                </div>
+    
+                <div class="col">
+                    <article class="card p-3"> 
+                        <img src="./img/img-favouriteFoodsDemo.png" alt="Screenshot of the Favourite Foods demo.">
+                        <h3>Favourite Foods demo</h3>
+                        <p>This small site showcases my ability to utilise CSS frameworks to produce a responsive website.</p>
+                        <section>
+                            <button onclick="document.location='https://favourite-foods-terry.netlify.app'" class="btn btn-primary">View Details</button>
+                        </section>
+                    </article>
+                </div>
+          </section>
+        </main>
+    </body>
 </html>
