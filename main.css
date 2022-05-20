@@ -193,8 +193,6 @@ nav {
 }
 
 #main {
-    display: flex;
-    flex-flow: column nowrap;
     width: auto;
     height: auto;
     box-sizing: border-box;
@@ -278,6 +276,10 @@ nav {
     main {
         padding-top: 100px
     }
+    .card {
+        width: auto;
+        margin-left: auto;
+    }
     #header-mid { padding-top: 64px; }
     #header-arrowhead { margin-top: 267px; }
 }
@@ -286,14 +288,22 @@ nav {
     main {
         margin-top: 0;
     }
+    .card {
+        width: auto;
+        margin-left: auto;
+    }
     #social-nav *  { font-size: 24px;}
     #header-mid { padding-top: 6px; }
-    #header-arrowhead { margin-top: 335px; }
+    #header-arrowhead { margin-top: 334px; }
 }
 
 @media only screen and (max-width: 375px) {
     main {
         margin-top: 0;
+    }
+    .card {
+        width: auto;
+        margin-left: auto;
     }
     #social-nav *  { font-size: 24px;}
     #header-mid { padding-top: 6px; }
@@ -304,6 +314,10 @@ nav {
     main {
         margin-top: 0;
     }
+    .card {
+        width: auto;
+        margin-left: auto;
+    }
     #social-nav *  { font-size: 24px;}
     #header-mid { padding-top: 6px; }
     #header-arrowhead { margin-top: 428px; }
@@ -313,24 +327,12 @@ nav {
     main {
         margin-top: 400px;
     }
+    .card {
+        width: auto;
+        margin-left: auto;
+    }
     #header-name, #header-desc { font-size: 32px; }
     #social-nav * { font-size: 24px;}
     #header-mid { padding-top: 64px; }
     #header-arrowhead { margin-top: 300px; }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
