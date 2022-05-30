@@ -4,19 +4,42 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Terry Fallows - Software Engineer</title>
-        <!-- Add futureproof favicons -->
-        <link href="https://uploads-ssl.webflow.com/618d068d04660411b63872f6/61a8a2935d913427d31de235_favicon.png" rel="shortcut icon" type="image/x-icon">
-        <link href="https://uploads-ssl.webflow.com/618d068d04660411b63872f6/61a8a299c6f16674367ab105_webclip.png" rel="apple-touch-icon">
-        <!-- Bootstrap 5.2.0-beta1 CSS -->
+        <!--
+        -- ─── ADD FUTUREPROOF FAVICONS ───────────────────────────────────────────────────
+        -->
+
+        <link href="./assets/img/favicon.png" rel="shortcut icon" type="image/png">
+        <link href="./assets/img/favicon.png" rel="apple-touch-icon" type="image/png">
+
+        <!--
+          -- ──────────────────────────────────────────────────────────────────────────────
+          -->
+            
+        <!--
+          -- ─── INITIALISE BOOTSTRAP 5.2.0-BETA1 CSS ─────────────────────────────────────
+          -->
+
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-        <link rel="stylesheet" href="./main.css">
+
+        <!--
+          -- ──────────────────────────────────────────────────────────────────────────────
+          -->
+         
+        <link rel="stylesheet" href="./assets/css/main.css">
     </head>
     <body>
-        <!-- Bootstrap 5.2.0-beta1 JS libaries -->
+
+        <!--
+          -- ─── LOAD BOOTSTRAP 5.2.0-BETA1 JS LIBARIES ───────────────────────────────────
+          -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>
-        <header>
+
+        <!--
+          -- ──────────────────────────────────────────────────────────────────────────────
+          -->
+        <header class="text-center">
             <div id="header-top">
                 <div id="header-mid">
                     <div id="header-mid-inner">
@@ -25,7 +48,7 @@
                                 <span id="header-name">Terry Fallows</span>
                             </div>
                             <div>
-                                <span id="header-desc">Software Engineer</span>
+                                <span id="header-desc" >Software Engineer</span>
                             </div>
                         </div>
                         <div id="header-mid-inner-right">
@@ -33,16 +56,14 @@
                                 <span id="profile-title">Trainee Software Engineer at futureproof</span>
                                 <span id="profile-prof">Experience with scripting languages and backend development.</span>
                             </div>
-                            <!-- TODO: Animate Social Buttons on hover. -->
                             <nav id="social-nav">
                                 <div id="social-icons-list">
-                                    <div id="social-icons-inner">
                                         <div class="social-icons">
                                             <a href="https://cohorts.getfutureproof.co.uk/al-jazari" target="_blank" rel="noopener noreferrer" title="See our futureproof cohorts page!">
-                                                <img src="./img/fp-logo.svg" alt="See our futureproof cohorts page!">
+                                                <img src="./assets/img/fp-logo.svg" alt="See our futureproof cohorts page!">
                                             </a>
                                         </div>
-                                    </div>
+                                    <!-- ! Add Event Handlers for Social Buttons for accessibility or reimplement as buttons ! -->
                                     <div class="social-icons">
                                         <a class="bi bi-stack-overflow disabled" href="#" target="_blank" rel="noopener noreferrer" title="Follow my Stack Overflow page!"></a>
                                     </div>
@@ -62,47 +83,57 @@
             <!-- TODO: Design and implement code carousel -->
         </header>
         <main class="container-fluid">
-            <div id="main" class="container-fluid">
-                <hr class="hr-text h1" aria-label="My Projects" data-content="My Projects">
-                <br>
-                <div class="row row-cols-md-3 row-cols-sm-1 mx-auto">
+            <section id="my-projects" class="container-fluid">       
+                <div class="title-ul"><h1>My Projects</h1></div>
+                <div class="row row-cols-md-3 row-cols-sm-1 p-3 mx-auto">
                     <div class="col">
                         <article class="card h-100 p-3">
-                            <img src="./img/img-al_jazariDemo.png" alt="Screenshot of the Al-Jazari Basic HTML Demo.">
+                            <img src="./assets/img/projects/img-al_jazariDemo.png" alt="Screenshot of the Al-Jazari Basic HTML Demo.">
                             <div class="card-body">
-                                <h5 class="card-title">Al-Jazari HTML Demo</h5>
+                                <h5 class="card-title text-center">Al-Jazari HTML Demo</h5>
                                 <p class="card-text">This small site showcases my ability to utilise basic HTML to design a website.
-                                    <br>
-                                    <br>
                                 </p>
-                                <button onclick="window.open('https://aljazari-cohort-terry.netlify.app')" class="btn btn-primary">View Details</button>
+                            </div>
+                            <hr>
+                            <div class="text-center">
+                                <button type="button" role="button" title="View the 'Al-Jazari HTML' project demo." onclick="window.open('https://aljazari-cohort-terry.netlify.app')" class="btn btn-primary m-2">View Website</button>
+                                <div class="vr"></div>
+                                <button type="button" role="button" title="View the 'Favourite Foods' GitHub repo." onclick="window.open('')" class="btn btn-dark bi-github m-2" disabled></button>
                             </div>
                         </article>
                     </div>
                     <div class="col">
                         <article class="card h-100 p-3">
-                            <img src="./img/img-sportsTeamDemo.png" alt="Screenshot of the Sports Team Demo.">
+                            <img src="./assets/img/projects/img-sportsTeamDemo.png" alt="Screenshot of the Sports Team Demo.">
                             <div class="card-body">
-                                <h5 class="card-title">Sports Team Demo</h5>
+                                <h5 class="card-title text-center">Sports Team Demo</h5>
                                 <p class="card-text">This small site showcases my ability to utilise advanced HTML with a colleague to design and deploy a website.</p>
-                                <button onclick="window.open('https://sports-team-terry.netlify.app/')" class="btn btn-primary">View Details</button>
+                            </div>
+                            <hr>
+                            <div class="text-center">
+                                <button type="button" role="button"" title="View the 'Sports Team' project demo." onclick="window.open('https://sports-team-terry.netlify.app/')" class="btn btn-primary m-2">View Website</button>
+                                <div class="vr"></div>
+                                <button type="button" role="button" title="View the 'Sports Team' GitHub repo." onclick="window.open('https://github.com/theweion/sports-team')" class="btn btn-dark bi-github m-2"></button>
                             </div>
                         </article>
                     </div>
                     <div class="col">
                         <article class="card h-100 p-3">
-                            <img src="./img/img-favouriteFoodsDemo.png" alt="Screenshot of the Favourite Foods demo.">
+                            <img src="./assets/img/projects/img-favouriteFoodsDemo.png" alt="Screenshot of the Favourite Foods demo.">
                             <div class="card-body">
-                                <h5 class="card-title">Favourite Foods Demo</h5>
-                                <p class="card-text">This small site showcases my ability to utilise CSS frameworks to produce a responsive website.
-                                    <br>
-                                </p>
-                                <button onclick="window.open('https://favourite-foods-terry.netlify.app')" class="btn btn-primary">View Details</button>
+                                <h5 class="card-title text-center">Favourite Foods Demo</h5>
+                                <p class="card-text">This small site showcases my ability to utilise CSS frameworks to produce a responsive website.</p>
+                            </div>
+                            <hr>
+                            <div class="text-center">
+                                <button type="button" role="button" title="View the 'Favourite Foods' project demo." onclick="window.open('https://favourite-foods-terry.netlify.app')" class="btn btn-primary m-2">View Website</button>
+                                <div class="vr"></div>
+                                <button type="button" role="button" title="View the 'Favourite Foods' GitHub repo." onclick="window.open('https://github.com/theweion/favourite-food')" class="btn btn-dark bi-github m-2"></button>
                             </div>
                         </article>
                     </div>
                 </div>
-            </div>
+            </section>
         </main>
     </body>
 </html>
