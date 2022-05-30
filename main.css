@@ -341,17 +341,6 @@
      #header-arrowhead { margin-top: 334px; }
  }
  
- @media only screen and (max-width: 375px) {
-     main { margin-top: 0; }
-     .card {
-         width: auto;
-         margin-left: auto;
-     }
-     #social-nav *  { font-size: 24px;}
-     #header-mid { padding-top: 6px; }
-     #header-arrowhead { margin-top: 398px; }
- }
- 
  @media only screen and (max-width: 360px) {
      main { margin-top: 0; }
      .card {
