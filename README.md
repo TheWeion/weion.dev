@@ -9,6 +9,8 @@
 ## Changelog
 
 ### index.html
+[x] Refactored Bootstrap 5 imports to use bundle instead of separate files.
+
 [x] Added Comments where appropriate.
 
 [x] Converted CSS to Bootstrap class flags for styling (i.e Cards and Header).
