@@ -4,7 +4,7 @@
 
 ## Usage
 
-* The live website can be accessed: [HERE](https://futureproof-portfolio-terry.netlify.app/)
+* The live website can be accessed: [HERE](https://weion.social)
 
 ## Changelog
 
