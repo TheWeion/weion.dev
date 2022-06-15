@@ -8,6 +8,9 @@
 
 ## Changelog
 
+### netlify.toml
+[x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
+
 ### index.html
 [x] Fix Card positioning on mobile devices.
 
