@@ -9,6 +9,14 @@
 ## Changelog
 
 ### index.html
+[x] Fix Card positioning on mobile devices.
+
+[x] Added Project 1.
+
+[x] Removed Dummy Project 1.
+
+[x] Added Netlify Status badges.
+
 [x] Refactored Bootstrap 5 imports to use bundle instead of separate files.
 
 [x] Added Comments where appropriate.
