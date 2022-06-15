@@ -37,7 +37,7 @@
                                 <span id="header-name">Terry Fallows</span>
                             </div>
                             <div>
-                                <span id="header-desc" >Software Engineer</span>
+                                <span id="header-desc">Software Engineer</span>
                             </div>
                         </div>
                         <div id="header-mid-inner-right">
@@ -71,44 +71,60 @@
             <span id="header-arrowhead"></span>
             <!-- TODO: Design and implement code carousel -->
         </header>
-        <main class="container-fluid">
+        <main class="container">
             <section id="my-projects" class="container-fluid">       
                 <div class="title-ul"><h1>My Projects</h1></div>
-                <div class="row row-cols-md-3 row-cols-sm-1 p-3 mx-auto">
-                    <div class="col">
-                        <article class="card h-100 p-3">
-                            <img src="./assets/img/projects/img-al_jazariDemo.png" alt="Screenshot of the Al-Jazari Basic HTML Demo.">
+                <div class="row pt-5">
+                    <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 pb-5 d-flex">
+                        <article class="card">
+                            <video class="card-img-top" oncontextmenu="return false;" autoplay loop playsinline>
+                                <source src="./assets/vid/projects/futureproof/vid-fp_proj1.webm" type="video/webm">
+                                <source src="./assets/vid/projects/futureproof/fallback/vid-fp_proj1.mp4" type="video/mp4">
+                            </video>
                             <div class="card-body">
-                                <h5 class="card-title text-center">Al-Jazari HTML Demo</h5>
-                                <p class="card-text">This small site showcases my ability to utilise basic HTML to design a website.
-                                </p>
+                                <h5 class="card-title text-center">Chatté Latté</h5>
+                                <p class="card-text">An anonymous social media platform where users can post about the greatest beverage in a coder's arsenal - Java.</p>
                             </div>
                             <hr>
                             <div class="text-center">
-                                <button type="button" role="button" title="View the 'Al-Jazari HTML' project demo." onclick="window.open('https://aljazari-cohort-terry.netlify.app')" class="btn btn-primary m-2">View Website</button>
+                                <button type="button" role="button" title="View the 'Chatté Latté' project demo." onclick="window.open('https://ctrl-alt-elite-java-journal.netlify.app/')" class="btn btn-primary m-2">View Website</button>
                                 <div class="vr"></div>
-                                <button type="button" role="button" title="View the 'Favourite Foods' GitHub repo." onclick="window.open('')" class="btn btn-dark bi-github m-2" disabled></button>
+                                <button type="button" role="button" title="View the 'Chatté Latté' GitHub repo for the Frontend." onclick="window.open('https://github.com/theweion/fp-lap1-journaling-website-frontend/')" class="btn btn-dark bi-github m-2"> Frontend</button>
+                                <button type="button" role="button" title="View the 'Chatté Latté' GitHub repo for the Backend." onclick="window.open('https://github.com/theweion/fp-lap1-journaling-website-backend')" class="btn btn-dark bi-github m-2"> Backend</button>
                             </div>
-                        </article>
+							<div class="card-footer">
+								<small class="text-muted">Status: 
+									<a href="https://app.netlify.com/sites/ctrl-alt-elite-java-journal/deploys" title="View Deploys on Netlify.">
+										<img src="https://api.netlify.com/api/v1/badges/b1d37f5c-3eee-4f5b-b70f-fed710eb3d43/deploy-status" alt="Netlify Status" />
+									</a>
+								</small>
+							</div>
+						</article>
                     </div>
-                    <div class="col">
-                        <article class="card h-100 p-3">
-                            <img src="./assets/img/projects/img-sportsTeamDemo.png" alt="Screenshot of the Sports Team Demo.">
+                    <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 pb-5 d-flex">
+                        <article class="card">
+                            <img class="card-img-top" src="./assets/img/projects/img-sportsTeamDemo.png" alt="Screenshot of the Sports Team Demo.">
                             <div class="card-body">
                                 <h5 class="card-title text-center">Sports Team Demo</h5>
                                 <p class="card-text">This small site showcases my ability to utilise advanced HTML with a colleague to design and deploy a website.</p>
                             </div>
                             <hr>
                             <div class="text-center">
-                                <button type="button" role="button"" title="View the 'Sports Team' project demo." onclick="window.open('https://sports-team-terry.netlify.app/')" class="btn btn-primary m-2">View Website</button>
+                                <button type="button" role="button" title="View the 'Sports Team' project demo." onclick="window.open('https://sports-team-terry.netlify.app/')" class="btn btn-primary m-2">View Website</button>
                                 <div class="vr"></div>
                                 <button type="button" role="button" title="View the 'Sports Team' GitHub repo." onclick="window.open('https://github.com/theweion/sports-team')" class="btn btn-dark bi-github m-2"></button>
                             </div>
+							<div class="card-footer">
+								<small class="text-muted">Status: 
+									<a href="https://app.netlify.com/sites/sports-team-terry/deploys" title="View Deploys on Netlify.">
+										<img src="https://api.netlify.com/api/v1/badges/5aa23ba3-260c-4d9b-97ec-51a0ceaeaeb8/deploy-status" alt="Netlify Status" />
+									</a>
+								</small>
                         </article>
                     </div>
-                    <div class="col">
-                        <article class="card h-100 p-3">
-                            <img src="./assets/img/projects/img-favouriteFoodsDemo.png" alt="Screenshot of the Favourite Foods demo.">
+                    <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 pb-5 d-flex">
+                        <article class="card">
+                            <img class="card-img-top" src="./assets/img/projects/img-favouriteFoodsDemo.png" alt="Screenshot of the Favourite Foods demo.">
                             <div class="card-body">
                                 <h5 class="card-title text-center">Favourite Foods Demo</h5>
                                 <p class="card-text">This small site showcases my ability to utilise CSS frameworks to produce a responsive website.</p>
@@ -119,6 +135,12 @@
                                 <div class="vr"></div>
                                 <button type="button" role="button" title="View the 'Favourite Foods' GitHub repo." onclick="window.open('https://github.com/theweion/favourite-food')" class="btn btn-dark bi-github m-2"></button>
                             </div>
+							<div class="card-footer">
+								<small class="text-muted">Status: 
+									<a href="https://app.netlify.com/sites/favourite-foods-terry/deploys" title="View Deploys on Netlify.">
+										<img src="https://api.netlify.com/api/v1/badges/466adbb5-6d2c-459e-bf78-cd27dbc68955/deploy-status" alt="Netlify Status" />
+									</a>
+								</small>
                         </article>
                     </div>
                 </div>

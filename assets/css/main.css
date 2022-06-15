@@ -194,11 +194,6 @@
      background: linear-gradient(to right, transparent, #818078, transparent);
      opacity: 1;
  }
- 
- .card {
-     width: 50%;
-     margin-left: 25%;
- }
 
  .disabled {
     opacity: 0.6;
