@@ -2,7 +2,7 @@
 
 # Redirect Netlify.app to weion.social domain.
 [[redirects]]
-  from = "https://futureproof-portfolio-terry.netlify.app"
-  to = "https://weion.social"
-  status = 301
-  force = true
+	from = "https://futureproof-portfolio-terry.netlify.app"
+	to = "https://weion.social"
+	status = 301
+	force = true
