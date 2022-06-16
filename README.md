@@ -9,6 +9,10 @@
 ## Changelog
 
 ### index.html
+[x] Added `muted` argument to video tag to attempt to fix WebM/MP4 autoplay on prod.
+
+[x] Tabs > Whitespace - need I say more?
+
 [x] Fix Card positioning on mobile devices.
 
 [x] Added Project 1.
@@ -36,6 +40,8 @@
 [x] Implemented Bootstrap.
 
 ### main.css
+[x] Tabs > Whitespace - need I say more?
+
 [x] Added Comments where appropriate.
 
 [x] Cleaned up CSS utilising Bootstrap classes instead.
