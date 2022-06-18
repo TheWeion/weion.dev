@@ -14,6 +14,8 @@
 [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
 
 ### index.html
+[x] Implemented WebP for browsers that support it.
+
 [x] Implemented skill marquee feature to header via CSS.
 
 [x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
@@ -49,6 +51,8 @@
 [x] Implemented Bootstrap.
 
 ### main.css
+[x] Fixed defect with futureproof SVG logo button on Mozilla Firefox as `width` and `height` properties were not explictly defined per SVG spec.
+
 [x] Optimised media queries to latest changes.
 
 [x] Added Hover UX for Bootstrap cards.
