@@ -14,6 +14,10 @@
 [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
 
 ### index.html
+[x] Implemented skill marquee feature to header via CSS.
+
+[x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
+
 [x] Added `muted` argument to video tag to attempt to fix WebM/MP4 autoplay on prod.
 
 [x] Tabs > Whitespace - need I say more?
@@ -45,6 +49,14 @@
 [x] Implemented Bootstrap.
 
 ### main.css
+[x] Optimised media queries to latest changes.
+
+[x] Added Hover UX for Bootstrap cards.
+
+[x] Added skill marquee feature to header.
+
+[x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
+
 [x] Tabs > Whitespace - need I say more?
 
 [x] Added Comments where appropriate.
