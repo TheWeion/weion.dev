@@ -51,6 +51,8 @@
 [x] Implemented Bootstrap.
 
 ### main.css
+[x] Optimised CSS file.
+
 [x] Fixed defect with futureproof SVG logo button on Mozilla Firefox as `width` and `height` properties were not explictly defined per SVG spec.
 
 [x] Optimised media queries to latest changes.
