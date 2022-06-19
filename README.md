@@ -85,9 +85,6 @@
 ### img/fp-logo.svg
 [x] Added Anti-Aliasing to logo.
 
-## TODO
-[ ] **Design:** Implement marquee effect under header to showcase all programming / coding languages and concepts that I know, this will list multiple lines of text that are animated to move horizontally across the div.
-
 ## Bugs
 
 [ ] **Accessibility Issue (🔴):**  At Div `social-icons-list` - Keyboard events work with <kbd>Enter</kbd> but not <kbd>Space</kbd>, and as anchor tags are being used this could confuse screen readers unless a new approach is taken.
