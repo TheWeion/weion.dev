@@ -14,6 +14,8 @@
 [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
 
 ### index.html
+[x] Added Developer Stats section.
+
 [x] Implemented WebP for browsers that support it.
 
 [x] Implemented skill marquee feature to header via CSS.
@@ -51,6 +53,8 @@
 [x] Implemented Bootstrap.
 
 ### main.css
+[x] Implemented Media Query improvements for landscape mode on mobile devices.
+
 [x] Optimised CSS file.
 
 [x] Fixed defect with futureproof SVG logo button on Mozilla Firefox as `width` and `height` properties were not explictly defined per SVG spec.
@@ -84,6 +88,9 @@
 
 ### img/fp-logo.svg
 [x] Added Anti-Aliasing to logo.
+
+## TODO
+[ ] Implement GitHub API to get total contributions across the year, or utilise React component for contribution calandar.
 
 ## Bugs
 
