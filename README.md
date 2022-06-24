@@ -11,87 +11,87 @@
 ## Changelog
 
 ### netlify.toml
-[x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
+- [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
 
 ### index.html
-[x] Added Developer Stats section.
+- [x] Added Developer Stats section.
 
-[x] Implemented WebP for browsers that support it.
+- [x] Implemented WebP for browsers that support it.
 
-[x] Implemented skill marquee feature to header via CSS.
+- [x] Implemented skill marquee feature to header via CSS.
 
-[x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
+- [x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
 
-[x] Added `muted` argument to video tag to attempt to fix WebM/MP4 autoplay on prod.
+- [x] Added `muted` argument to video tag to attempt to fix WebM/MP4 autoplay on prod.
 
-[x] Tabs > Whitespace - need I say more?
+- [x] Tabs > Whitespace - need I say more?
 
-[x] Fix Card positioning on mobile devices.
+- [x] Fix Card positioning on mobile devices.
 
-[x] Added Project 1.
+- [x] Added Project 1.
 
-[x] Removed Dummy Project 1.
+- [x] Removed Dummy Project 1.
 
-[x] Added Netlify Status badges.
+- [x] Added Netlify Status badges.
 
-[x] Refactored Bootstrap 5 imports to use bundle instead of separate files.
+- [x] Refactored Bootstrap 5 imports to use bundle instead of separate files.
 
-[x] Added Comments where appropriate.
+- [x] Added Comments where appropriate.
 
-[x] Converted CSS to Bootstrap class flags for styling (i.e Cards and Header).
+- [x] Converted CSS to Bootstrap class flags for styling (i.e Cards and Header).
 
-[x] Added titles to buttons for accessibility.
+- [x] Added titles to buttons for accessibility.
 
-[x] Redesigned favicon so that it is easier to see in Tabs and Windows.
+- [x] Redesigned favicon so that it is easier to see in Tabs and Windows.
 
-[x] Improved Hyperlink UX - Open in new Tab.
+- [x] Improved Hyperlink UX - Open in new Tab.
 
-[x] Redesigned Website with new header and social icons through Bootstrap and CSS.
+- [x] Redesigned Website with new header and social icons through Bootstrap and CSS.
 
-[x] Added content from the training week such as website projects.
+- [x] Added content from the training week such as website projects.
 
-[x] Implemented Bootstrap.
+- [x] Implemented Bootstrap.
 
 ### main.css
-[x] Implemented Media Query improvements for landscape mode on mobile devices.
+- [x] Implemented Media Query improvements for landscape mode on mobile devices.
 
-[x] Optimised CSS file.
+- [x] Optimised CSS file.
 
-[x] Fixed defect with futureproof SVG logo button on Mozilla Firefox as `width` and `height` properties were not explictly defined per SVG spec.
+- [x] Fixed defect with futureproof SVG logo button on Mozilla Firefox as `width` and `height` properties were not explictly defined per SVG spec.
 
-[x] Optimised media queries to latest changes.
+- [x] Optimised media queries to latest changes.
 
-[x] Added Hover UX for Bootstrap cards.
+- [x] Added Hover UX for Bootstrap cards.
 
-[x] Added skill marquee feature to header.
+- [x] Added skill marquee feature to header.
 
-[x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
+- [x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
 
-[x] Tabs > Whitespace - need I say more?
+- [x] Tabs > Whitespace - need I say more?
 
-[x] Added Comments where appropriate.
+- [x] Added Comments where appropriate.
 
-[x] Cleaned up CSS utilising Bootstrap classes instead.
+- [x] Cleaned up CSS utilising Bootstrap classes instead.
 
-[x] Removed unneeded Media Query that was causing visual bug on iPhone SE and similar devices.
+- [x] Removed unneeded Media Query that was causing visual bug on iPhone SE and similar devices.
 
-[x] Refactored H1 tag to get same effect as the previous implementation posed an accessability risk (e.g Screen Readers).
+- [x] Refactored H1 tag to get same effect as the previous implementation posed an accessability risk (e.g Screen Readers).
 
-[x] Redesigned H1 Tag to use Horizontal Rule (centred underline) for desired efffect.
+- [x] Redesigned H1 Tag to use Horizontal Rule (centred underline) for desired efffect.
 
-[x] Added Media Queries - Fixing Card scaling on large displays.
+- [x] Added Media Queries - Fixing Card scaling on large displays.
 
-[x] Created `.disabled` id for Social Media buttons not currently in use.
+- [x] Created `.disabled` id for Social Media buttons not currently in use.
 
-[x] Redesigned Website with new header and social icons through Bootstrap and CSS.
+- [x] Redesigned Website with new header and social icons through Bootstrap and CSS.
 
 
 ### img/fp-logo.svg
-[x] Added Anti-Aliasing to logo.
+- [x] Added Anti-Aliasing to logo.
 
 ## TODO
-[ ] Implement GitHub API to get total contributions across the year, or utilise React component for contribution calandar.
+- [ ] Implement GitHub API to get total contributions across the year, or utilise React component for contribution calandar.
 
 ## Bugs
 
-[ ] **Accessibility Issue (🔴):**  At Div `social-icons-list` - Keyboard events work with <kbd>Enter</kbd> but not <kbd>Space</kbd>, and as anchor tags are being used this could confuse screen readers unless a new approach is taken.
+- [ ] **Accessibility Issue (🔴):**  At Div `social-icons-list` - Keyboard events work with <kbd>Enter</kbd> but not <kbd>Space</kbd>, and as anchor tags are being used this could confuse screen readers unless a new approach is taken.
