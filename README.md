@@ -12,6 +12,8 @@
 
 ### netlify.toml
 
+- [x] Implemented HTTP Security Headers.
+
 - [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
 
 ### index.html
@@ -63,6 +65,7 @@
 - [x] Implemented Bootstrap.
 
 ### main.css
+
 - [x] Implemented Media Query improvements for landscape mode on mobile devices.
 
 - [x] Optimised CSS file.
@@ -97,6 +100,7 @@
 
 
 ### img/fp-logo.svg
+
 - [x] Added Anti-Aliasing to logo.
 
 ## TODO
