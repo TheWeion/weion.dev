@@ -16,6 +16,10 @@
 
 ### index.html
 
+- [x] Added `disablePictureInPicture` attribute to `<video>` tag.
+
+- [x] Rerendered Project 1 video.
+
 - [x] Added Project 2.
 
 - [x] Removed Dummy Project 2.
