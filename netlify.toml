@@ -9,7 +9,6 @@
 		X-Content-Type-Options = "nosniff"
 		X-Permitted-Cross-Domain-Policies = "none"
 		Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-		Content-Security-Policy = "default-src * data:; script-src https: 'unsafe-inline' 'unsafe-eval'; style-src https: 'unsafe-inline'"
 		Referrer-Policy = "no-referrer-when-downgrade"
 		Feature-Policy = "camera 'none'; fullscreen 'self'; geolocation *; microphone 'none'; https://futureproof-portfolio-terry.netlify.app/*"
 [[redirects]]
