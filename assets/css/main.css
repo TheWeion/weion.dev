@@ -141,7 +141,7 @@ header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
     overflow: hidden;
 	animation: 50s linear 0s infinite normal none running marquee;
 	clip-path: polygon(0 0,50% 80px,100% 0,100% 100%,0 100%);
-	z-index: 1;
+	z-index: 0;
  }
 
 .marquee-2 span { animation-delay: 2.5s; }
@@ -236,11 +236,6 @@ h2 {
 	opacity: 0.6;
 	pointer-events: none;
 }
-
-/* #dev-stats div,figure,img {
-	padding: 0;
-	margin: 0;
-} */
 
 /*
  * ─── MEDIA QUERIES ──────────────────────────────────────────────────────────────
