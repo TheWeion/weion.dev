@@ -12,6 +12,8 @@
 
 ### netlify.toml
 
+- [x] CSP 2: Electric Boogaloo (Reimplemented again).
+
 - [x] Fixed CSP defect on Edge causing external SVGs being blocked on certain browsers.
 
 - [x] Reimplemented CSP Header.
