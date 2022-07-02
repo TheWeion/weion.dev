@@ -12,6 +12,8 @@
 
 ### netlify.toml
 
+- [x] Fixed CSP defect on Edge causing external SVGs being blocked on certain browsers.
+
 - [x] Reimplemented CSP Header.
 
 - [x] Implemented HTTP Security Headers.
