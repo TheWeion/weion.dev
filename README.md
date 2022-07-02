@@ -24,6 +24,10 @@
 
 ### index.html
 
+- [x] Implemented ARIA roles to anchor buttons.
+
+- [x] Updated `button` JS document calls to `anchor` tag `href` attributes for hyperlinks to comply with CSP.
+
 - [x] Added `disablePictureInPicture` attribute to `<video>` tag.
 
 - [x] Rerendered Project 1 video.
