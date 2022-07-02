@@ -12,6 +12,8 @@
 
 ### netlify.toml
 
+- [x] Reimplemented CSP Header.
+
 - [x] Implemented HTTP Security Headers.
 
 - [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
