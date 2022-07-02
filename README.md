@@ -11,9 +11,15 @@
 ## Changelog
 
 ### netlify.toml
+
 - [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
 
 ### index.html
+
+- [x] Added Project 2.
+
+- [x] Removed Dummy Project 2.
+
 - [x] Added Developer Stats section.
 
 - [x] Implemented WebP for browsers that support it.
@@ -90,6 +96,9 @@
 - [x] Added Anti-Aliasing to logo.
 
 ## TODO
+
+- [ ] Get Netlify Deploy status badge from [@Tari38](https://github.com/Tari38) for project 2 to replace unofficial deploy badge using public API.
+
 - [ ] Implement GitHub API to get total contributions across the year, or utilise React component for contribution calandar.
 
 ## Bugs
