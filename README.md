@@ -10,6 +10,10 @@
 
 ## Changelog
 
+### index.js
+
+- [x] Initial Commit
+
 ### netlify.toml
 
 - [x] CSP 2: Electric Boogaloo (Reimplemented again).
@@ -23,6 +27,8 @@
 - [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
 
 ### index.html
+
+- [x] Replaced `oncontextmenu` events with class `disableContextMenu` which links to index.js - Complies with CSP. 
 
 - [x] Implemented ARIA roles to anchor buttons.
 
