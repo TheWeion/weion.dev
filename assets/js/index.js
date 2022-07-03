@@ -7,12 +7,12 @@
 
 "use strict";
 
-window.onload = function() {
+document.addEventListener("DOMContentLoaded", function() {
 	disableContextMenu();
-}
+});
 
 // ─── Disable Context Menu ───────────────────────────────────────────────────────
-// Desc: Disable context menu on right-click for Card IMG elements.
+// 	Desc: Disable context menu on right-click for Card IMG elements.
 // ─────────────────────────────────────────────────────────────────────── UX ─────
 
 function disableContextMenu() {

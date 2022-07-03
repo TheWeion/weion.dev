@@ -12,6 +12,8 @@
 
 ### assets/js/index.js
 
+- [x] Refactored the code so the functions are executed when the DOM has loaded and not the entire page.
+
 - [x] Refactored with a ForEach to iterate through the `disableContextMenu` class collection.
 
 - [x] Initial Commit.
