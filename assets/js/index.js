@@ -16,6 +16,8 @@ window.onload = function() {
 // ─────────────────────────────────────────────────────────────────────── UX ─────
 
 function disableContextMenu() {
-	const CARD_IMG = document.querySelector(".disableContextMenu");
-	CARD_IMG.addEventListener("contextmenu", e => e.preventDefault());
-}
+	const CARD_IMG = document.querySelectorAll(".disableContextMenu");
+	CARD_IMG.forEach(element => {
+		element.addEventListener("contextmenu", e => e.preventDefault());
+	});
+};

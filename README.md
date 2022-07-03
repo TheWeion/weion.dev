@@ -10,9 +10,11 @@
 
 ## Changelog
 
-### index.js
+### assets/js/index.js
 
-- [x] Initial Commit
+- [x] Refactored with a ForEach to iterate through the `disableContextMenu` class collection.
+
+- [x] Initial Commit.
 
 ### netlify.toml
 
@@ -80,7 +82,7 @@
 
 - [x] Implemented Bootstrap.
 
-### main.css
+### assets/css/main.css
 
 - [x] Implemented Media Query improvements for landscape mode on mobile devices.
 
