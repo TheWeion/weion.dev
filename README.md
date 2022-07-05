@@ -20,6 +20,8 @@
 
 ### netlify.toml
 
+- [x] Implemented post-processing and Search Engine Optimisations on Netlify - Updated CSP to allow media from cloudflare.
+
 - [x] Removed URL from Feature-Policy path to fix error.
 
 - [x] CSP 2: Electric Boogaloo (Reimplemented again).
