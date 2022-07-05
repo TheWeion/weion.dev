@@ -20,7 +20,7 @@
 
 ### netlify.toml
 
-- [x] Amended Feature-Policy URL path to fix warning.
+- [x] Removed URL from Feature-Policy path to fix error.
 
 - [x] CSP 2: Electric Boogaloo (Reimplemented again).
 
