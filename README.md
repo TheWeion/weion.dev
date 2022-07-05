@@ -20,6 +20,8 @@
 
 ### netlify.toml
 
+- [x] Added Cloudflare proxy link to `script-src` to allow for CSS optimisations.
+
 - [x] Implemented post-processing and Search Engine Optimisations on Netlify - Updated CSP to allow media from cloudflare.
 
 - [x] Removed URL from Feature-Policy path to fix error.
