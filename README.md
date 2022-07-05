@@ -20,6 +20,8 @@
 
 ### netlify.toml
 
+- [x] Amended Feature-Policy URL path to fix warning.
+
 - [x] CSP 2: Electric Boogaloo (Reimplemented again).
 
 - [x] Fixed CSP defect on Edge causing external SVGs being blocked on certain browsers.
