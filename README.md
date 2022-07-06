@@ -38,6 +38,8 @@
 
 ### index.html
 
+- [x] Added Meta tags.
+
 - [x] Replaced `oncontextmenu` events with class `disableContextMenu` which links to index.js - Complies with CSP. 
 
 - [x] Implemented ARIA roles to anchor buttons.
