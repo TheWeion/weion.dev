@@ -20,6 +20,8 @@
 
 ### netlify.toml
 
+- [x] Replaced Lap 2 deploy badge with Official Netlify Status badge.
+
 - [x] Added Cloudfront proxy link to `script-src` to allow for CSS optimisations.
 
 - [x] Implemented post-processing and Search Engine Optimisations on Netlify - Updated CSP to allow media from cloudflare.
