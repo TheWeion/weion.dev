@@ -135,8 +135,6 @@
 
 ## TODO
 
-- [ ] Get Netlify Deploy status badge from [@Tari38](https://github.com/Tari38) for project 2 to replace unofficial deploy badge using public API.
-
 - [ ] Implement GitHub API to get total contributions across the year, or utilise React component for contribution calandar.
 
 ## Bugs
