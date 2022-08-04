@@ -16,7 +16,10 @@
 	text-overflow: ellipsis;
 }
  
-body { background-color:whitesmoke; }
+body { 
+	min-width: 256px;
+	background-color:whitesmoke; 
+}
 
 main { padding-top: 32px; }
 
@@ -241,44 +244,7 @@ h2 {
  * ─── MEDIA QUERIES ──────────────────────────────────────────────────────────────
  */
 
-@media only screen and (max-width:877px) {
-	#header-top { height: 46vh; }
-}
-
-@media only screen and (max-width:768px) {
-	#header-top { height: 52vh; }
-}
-
-@media only screen and (max-width:667px) {
-	#header-top { height: 90vh; }
-	#header-mid { padding-top: 6px; }
-	#header-mid-inner { padding-top: 0; }
-}
-
-
-
-@media only screen and (max-width:540px) {
-	#header-top { height: 70vh; }
-	#header-mid { padding-top: 6px; }
-	#header-mid-inner { padding-top: 5vh; }
-}
-
-@media only screen and (max-width:393px) {
-	#header-top { height: 74vh; }
-	#header-mid-inner { padding-top: 5vh; }
-	#social-nav *  { font-size: 24px;}
-}
-
-@media only screen and (max-width:375px) {
-	#header-top { height: 88vh; }
-	#header-mid-inner { padding-top: 0vh; }
-}
-
-@media only screen and (max-width:280px) {
-	#header-top { height: 100vh; }
-}
-
-@media only screen and (max-width:915px) and (max-height:540px) {
+ @media only screen and (max-width:915px) and (max-height:540px) {
 	#header-top {
 		height: 100vh;
 		padding-top: 0;
@@ -286,4 +252,42 @@ h2 {
 	#header-mid { padding-top: 0; }
 	#header-mid-inner { padding-top: 0; }
 	#social-nav *  { font-size: 24px;}
+}
+
+ @media only screen and (max-width:877px) {
+	#header-top { height: 46vh; }
+}
+
+@media only screen and (max-width:667px) {
+	#header-top { height: 42vh; }
+	#header-mid { padding-top: 6px; }
+	#header-mid-inner { padding-top: 0; }
+}
+
+@media only screen and (max-width:540px) {
+	#header-top { height: 48vh; }
+	#header-mid-inner { padding-top: 5vh; }
+}
+
+@media only screen and (max-width:435px) {
+	#header-top { height: 42vh; }
+	#header-mid-inner { padding-top: 1vh; }
+	#social-nav *  { font-size: 24px;}
+	#header-name { font-size: 3rem; }
+	#header-desc { font-size: 2rem; }
+}
+
+@media only screen and (max-width:375px) {
+	#header-mid-inner { padding-top: 0vh; }
+}
+
+@media only screen and (max-width:320px) {
+	#header-name { font-size: 2.5rem; }
+	#header-desc { font-size: 1.5rem; }
+}
+
+@media only screen and (max-width:268px) {
+	#header-top { height: 38vh; }
+	#header-name { font-size: 2rem; }
+	#header-desc { font-size: 1.25rem; }
 }
