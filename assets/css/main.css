@@ -255,22 +255,22 @@ h2 {
 }
 
  @media only screen and (max-width:877px) {
-	#header-top { height: 46vh; }
+	#header-top { height: 51vh; }
 }
 
 @media only screen and (max-width:667px) {
-	#header-top { height: 42vh; }
+	#header-top { height: 47vh; }
 	#header-mid { padding-top: 6px; }
 	#header-mid-inner { padding-top: 0; }
 }
 
 @media only screen and (max-width:540px) {
-	#header-top { height: 48vh; }
+	#header-top { height: 53vh; }
 	#header-mid-inner { padding-top: 5vh; }
 }
 
 @media only screen and (max-width:435px) {
-	#header-top { height: 42vh; }
+	#header-top { height: 52vh; }
 	#header-mid-inner { padding-top: 1vh; }
 	#social-nav *  { font-size: 24px;}
 	#header-name { font-size: 3rem; }
@@ -287,7 +287,7 @@ h2 {
 }
 
 @media only screen and (max-width:268px) {
-	#header-top { height: 38vh; }
+	#header-top { height: 43vh; }
 	#header-name { font-size: 2rem; }
 	#header-desc { font-size: 1.25rem; }
 }
