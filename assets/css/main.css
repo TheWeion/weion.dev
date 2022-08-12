@@ -102,6 +102,11 @@ header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
 	display: flex;
 	background-color: #191a1d;
 }
+
+.job-note {
+	vertical-align: super;
+	font-size: 0.75rem;
+}
  
 /*
  * ─── HEADER: PROFILE - SOCIAL MEDIA ─────────────────────────────────────────────
