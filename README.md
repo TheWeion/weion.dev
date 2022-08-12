@@ -10,6 +10,12 @@
 
 ## Changelog
 
+### assets/vid/projects/futureproof
+
+- [x] Optimised project video files.
+
+- [x] Added my final group project with futureproof (EnviroMates).
+
 ### assets/js/index.js
 
 - [x] Refactored the code so the functions are executed when the DOM has loaded and not the entire page.
@@ -39,6 +45,8 @@
 - [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
 
 ### index.html
+
+- [x] Added Lap 4 project and card.
 
 - [x] Added Meta tags.
 
