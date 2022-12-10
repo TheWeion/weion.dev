@@ -46,6 +46,8 @@
 
 ### index.html
 
+- [x] Updated Job Title, replaced Stack Overflow button with a LinkedIn button, and updated Favicon.
+
 - [x] Added Lap 4 project and card.
 
 - [x] Added Meta tags.
@@ -139,6 +141,7 @@
 
 ### img/fp-logo.svg
 
+- [x] Optimised SVG file.
 - [x] Added Anti-Aliasing to logo.
 
 ## TODO
