@@ -23,5 +23,5 @@
 [[redirects]]
 	from = "https://futureproof-portfolio-terry.netlify.app"
 	to = "https://weion.social"
-	status = 404
+	status = 301
 	force = true
