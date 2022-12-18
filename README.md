@@ -1,8 +1,8 @@
-# Portfolio Website
+# Weion.Social
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/a3309f19-bbdc-485b-a3ae-e96be0836b6f/deploy-status)](https://app.netlify.com/sites/weion/deploys)
 
-> This project will showcase all my projects and achievements while on the Al-Jazari Cohort including any interesting topics about myself.
+> A portfolio of all my coding achievements showcasing my love for technology.
 
 ## Usage
 
