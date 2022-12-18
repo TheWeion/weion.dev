@@ -19,9 +19,3 @@
 	to = "https://weion.social"
 	status = 301
 	force = true
-
-[[redirects]]
-	from = "https://futureproof-portfolio-terry.netlify.app"
-	to = "https://weion.social"
-	status = 301
-	force = true
