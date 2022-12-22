@@ -12,6 +12,7 @@
 * { 
 	margin: 0;
 	font-family: "Roboto","Helvetica Neue","Segoe UI","Segoe UI Web (West European)","Segoe UI",-apple-system,"BlinkMacSystemFont","sans-serif";
+	font-display: swap;
 	-webkit-font-smoothing: antialiased;
 	text-overflow: ellipsis;
 }
