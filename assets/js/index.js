@@ -49,7 +49,7 @@ const generateMetaTags = (title, description, imageUrl, platforms) => {
 
 const metaTags = generateMetaTags(
 	'Terry Fallows | Software Engineer',
-	'Welcome to my portfolio, I am currently looking for my next adventure in code, developing great software and squashing bugs.',
+	'Welcome to my portfolio, I am a lover of all things code, currently enhancing STB UI/UX for customers at CommScope.',
 	'https://weion.social/assets/img/meta_img.webp',
 	['facebook', 'twitter']
 );
