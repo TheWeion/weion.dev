@@ -28,7 +28,7 @@ const generateMetaTags = (title, description, imageUrl, platforms) => {
 	  if (platform === 'facebook') {
 		// Add the Facebook meta tags
 		platformTags.push(`<meta property="og:type" content="website" />`);
-		platformTags.push(`<meta property="og:url" content="https://weion.social/" />`);
+		platformTags.push(`<meta property="og:url" content="https://weion.dev/" />`);
 		platformTags.push(`<meta property="og:title" content="${title}" />`);
 		platformTags.push(`<meta property="og:description" content="${description}" />`);
 		platformTags.push(`<meta property="og:image" content="${imageUrl}" />`);
@@ -36,7 +36,7 @@ const generateMetaTags = (title, description, imageUrl, platforms) => {
 	  } else if (platform === 'twitter') {
 		// Add the Twitter meta tags
 		platformTags.push(`<meta name="twitter:card" content="summary_large_image" />`);
-		platformTags.push(`<meta name="twitter:url" content="https://weion.social/" />`);
+		platformTags.push(`<meta name="twitter:url" content="https://weion.dev/" />`);
 		platformTags.push(`<meta name="twitter:title" content="${title}" />`);
 		platformTags.push(`<meta name="twitter:description" content="${description}" />`);
 		platformTags.push(`<meta name="twitter:image" content="${imageUrl}" />`);
@@ -50,7 +50,7 @@ const generateMetaTags = (title, description, imageUrl, platforms) => {
 const metaTags = generateMetaTags(
 	'Terry Fallows | Software Engineer',
 	'Welcome to my portfolio, I am a lover of all things code, currently enhancing STB UI/UX for customers at CommScope.',
-	'https://weion.social/assets/img/meta_img.webp',
+	'https://weion.dev/assets/img/meta_img.webp',
 	['facebook', 'twitter']
 );
 
@@ -66,4 +66,4 @@ function disableContextMenu() {
 	CARD_IMG.forEach(element => {
 		element.addEventListener("contextmenu", e => e.preventDefault());
 	});
-};
+}

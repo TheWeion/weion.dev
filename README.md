@@ -1,4 +1,4 @@
-# Weion.Social
+# Weion.Dev
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/a3309f19-bbdc-485b-a3ae-e96be0836b6f/deploy-status)](https://app.netlify.com/sites/weion/deploys)
 
@@ -6,7 +6,7 @@
 
 ## Usage
 
-* The live website can be accessed: [HERE](https://weion.social)
+* The live website can be accessed: [HERE](https://weion.dev)
 
 ## Changelog
 
@@ -25,6 +25,8 @@
 - [x] Initial Commit.
 
 ### netlify.toml
+
+- [x] Force redirect of netlify.app and weion.social domain to https://weion.dev
 
 - [x] Replaced Lap 2 deploy badge with Official Netlify Status badge.
 
