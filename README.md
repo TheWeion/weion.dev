@@ -26,7 +26,7 @@
 
 ### netlify.toml
 
-- [x] Force redirect of netlify.app and weion.social domain to https://weion.dev
+- [x] Force redirect of netlify.app domain to https://weion.dev
 
 - [x] Replaced Lap 2 deploy badge with Official Netlify Status badge.
 

@@ -18,10 +18,3 @@
 	to = "https://weion.dev"
 	status = 301
 	force = true
-
-# Redirect weion.social to weion.dev domain.
-[[redirects]]
-from = "https://weion.social"
-to = "https://weion.dev"
-status = 301
-force = true
