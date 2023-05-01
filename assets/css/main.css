@@ -1,40 +1,51 @@
 /* ─── IMPORT FONTS ─────────────────────────────────────────────────────────────── */
 
- @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,400;1,500;1,700;1,900&display=swap");
- @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.2/font/bootstrap-icons.css");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,400;1,500;1,700;1,900&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css");
 
 /* ─── GLOBALS ──────────────────────────────────────────────────────────────────── */
 
-* { 
+@font-face {
+	font-family: 'Roboto';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Roboto'), local('Roboto-Regular'), url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Mu4mxK.woff2) format('woff2');
+	font-display: swap;
+}
+
+* {
 	margin: 0;
 	font-family: "Roboto","Helvetica Neue","Segoe UI","Segoe UI Web (West European)","Segoe UI",-apple-system,"BlinkMacSystemFont","sans-serif";
-	font-display: swap;
 	-webkit-font-smoothing: antialiased;
 	text-overflow: ellipsis;
 }
 
-body { 
+body {
 	min-width: 256px;
-	background-color:whitesmoke; 
+	background-color: whitesmoke;
 }
 
-main { padding-top: 32px; }
+main {
+	padding-top: 32px;
+}
 
 /* ─── HEADER ───────────────────────────────────────────────────────────────────── */
 
-header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
+header {
+	filter: drop-shadow(0 3px 10px #191a1d);
+}
 
 #header-top {
 	height: 435px;
 	padding-top: 2.5vh;
-	background-color:#191a1d;
-	clip-path: polygon(0 0,100% 0,100% calc(100% - 80px),50% 100%,0 calc(100% - 80px));
+	background-color: #191a1d;
+	clip-path: polygon(0 0, 100% 0, 100% calc(100% - 80px), 50% 100%, 0 calc(100% - 80px));
 	z-index: 2;
 }
 
 #header-mid {
 	padding-top: 64px;
-	background-color:#191a1d;
+	background-color: #191a1d;
 }
 
 #header-mid-inner {
@@ -53,15 +64,15 @@ header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
 #header-name {
 	display: inline;
 	color: white;
-    font-size: 68px;
-    font-weight: 500;
+	font-size: 68px;
+	font-weight: 500;
 }
 
 #header-desc {
 	display: inline;
 	color: #a7a7a7;
 	font-size: 42px;
-    font-weight: 400;
+	font-weight: 400;
 }
 
 /* ─── HEADER: PROFILE ──────────────────────────────────────────────────────────── */
@@ -71,26 +82,26 @@ header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
 	flex-flow: column nowrap;
 	align-items: center;
 }
- 
+
 #header-profile {
 	display: flex;
 	flex-flow: column nowrap;
 }
- 
+
 #profile-title {
 	display: inline;
 	color: white;
 	font-size: 20px;
 	font-weight: 400;
 }
- 
+
 #profile-prof {
 	display: inline;
 	color: #a7a7a7;
 	font-size: 16px;
 	font-weight: 200;
 }
- 
+
 #social-icons-list {
 	display: flex;
 	background-color: #191a1d;
@@ -100,11 +111,11 @@ header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
 	vertical-align: super;
 	font-size: 0.75rem;
 }
- 
+
 /* ─── HEADER: PROFILE - SOCIAL MEDIA ───────────────────────────────────────────── */
 
 .social-icons { transition: all .2s ease-in-out; }
- 
+
 .social-icons a {
 	display: inline-flex;
 	height: 64px;
@@ -116,7 +127,7 @@ header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
 	color: white;
 }
 
-.social-icons a:hover { 
+.social-icons a:hover {
 	transform: scale(1.2);
 	border-top: 3px solid #c9c9c9;
 }
@@ -125,11 +136,11 @@ header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
 
 .marquee-container {
 	margin-top: -70px;
-    font-size: 22px;
-    font-weight: lighter;
-    color: #797979;
+	font-size: 22px;
+	font-weight: lighter;
+	color: #797979;
 	white-space: nowrap;
-    overflow: hidden;
+	overflow: hidden;
 	animation: 50s linear 0s infinite normal none running marquee;
 	clip-path: polygon(0 0,50% 80px,100% 0,100% 100%,0 100%);
 	z-index: 0;
@@ -188,8 +199,7 @@ header { filter: drop-shadow(0 3px 10px rgb(25, 26, 29));}
 h1 {
 	width: 100%;
 	font-size: 28px;
-    font-weight: lighter;
-	font-weight: 100;
+	font-weight: lighter;
 	text-align: center;
 	margin-bottom: 2px;
 	opacity: 0.7;
@@ -226,7 +236,7 @@ h2 {
 	width: 100%;
 }
 
- .disabled {
+.disabled {
 	opacity: 0.6;
 	pointer-events: none;
 }

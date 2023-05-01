@@ -7,45 +7,45 @@
 
 "use strict";
 
-document.addEventListener("DOMContentLoaded", function() {
-	disableContextMenu();
-});
-
-// ─── Generate Meta Tags ──────────────────────────────────────────────────────
-// Desc: Generate meta tags for SEO.
-// ─────────────────────────────────────────────────────────────────── SEO ─────
-
+/**
+ * @function generateMetaTags
+ * @description Generates meta tags for SEO.
+ * @param {string} title - The title to be used for the meta tags.
+ * @param {string} description - The description to be used for the meta tags.
+ * @param {string} imageUrl - The image URL to be used for the meta tags.
+ * @param {Array<string>} platforms - The social media platforms for which to generate the appropriate meta tags.
+ * @returns {string} - The meta tags as a string.
+ */
 const generateMetaTags = (title, description, imageUrl, platforms) => {
-	// Create the title tag
 	const titleTag = `<meta property="title" content="${title}" />`;
 	const descriptionTag = `<meta property="description" content="${description}" />`;
 
-	// Create an array to hold the meta tags for each platform
 	const platformTags = [];
 
-	// Loop through the platforms array and generate the appropriate meta tags for each platform
-	platforms.forEach(platform => {
-	  if (platform === 'facebook') {
-		// Add the Facebook meta tags
-		platformTags.push(`<meta property="og:type" content="website" />`);
-		platformTags.push(`<meta property="og:url" content="https://weion.dev/" />`);
-		platformTags.push(`<meta property="og:title" content="${title}" />`);
-		platformTags.push(`<meta property="og:description" content="${description}" />`);
-		platformTags.push(`<meta property="og:image" content="${imageUrl}" />`);
+	for (let i = 0; i < platforms.length; i++) {
+		const platform = platforms[i];
 
-	  } else if (platform === 'twitter') {
-		// Add the Twitter meta tags
-		platformTags.push(`<meta name="twitter:card" content="summary_large_image" />`);
-		platformTags.push(`<meta name="twitter:url" content="https://weion.dev/" />`);
-		platformTags.push(`<meta name="twitter:title" content="${title}" />`);
-		platformTags.push(`<meta name="twitter:description" content="${description}" />`);
-		platformTags.push(`<meta name="twitter:image" content="${imageUrl}" />`);
-	  }
-	});
+		if (platform === "facebook") {
+			platformTags.push(
+				`<meta property="og:type" content="website" />`,
+				`<meta property="og:url" content="https://weion.dev/" />`,
+				`<meta property="og:title" content="${title}" />`,
+				`<meta property="og:description" content="${description}" />`,
+				`<meta property="og:image" content="${imageUrl}" />`
+			);
+		} else if (platform === "twitter") {
+			platformTags.push(
+				`<meta name="twitter:card" content="summary_large_image" />`,
+				`<meta name="twitter:url" content="https://weion.dev/" />`,
+				`<meta name="twitter:title" content="${title}" />`,
+				`<meta name="twitter:description" content="${description}" />`,
+				`<meta name="twitter:image" content="${imageUrl}" />`
+			);
+		}
+	}
 
-	// Return the meta tags as a string
-	return `${titleTag}\n${descriptionTag}\n${platformTags.join('\n')}`;
-}
+	return `${titleTag}\n${descriptionTag}\n${platformTags.join("\n")}`;
+};
 
 const metaTags = generateMetaTags(
 	'Terry Fallows | Software Engineer',
@@ -57,13 +57,15 @@ const metaTags = generateMetaTags(
 const lastMetaTag = document.querySelector('head > meta:last-of-type');
 lastMetaTag.insertAdjacentHTML('afterend', metaTags);
 
-// ─── Disable Context Menu ───────────────────────────────────────────────────────
-// Desc: Disable context menu on right-click for Card IMG elements.
-// ─────────────────────────────────────────────────────────────────────── UX ─────
+/**
+ * @function disableContextMenu
+ * @description Disables context menu on right-click for card IMG elements.
+ */
+const disableContextMenu = () => {
+	const cardImg = document.querySelectorAll(".disableContextMenu");
+	for (const img of cardImg) {
+		img.addEventListener("contextmenu", e => e.preventDefault());
+	}
+};
 
-function disableContextMenu() {
-	const CARD_IMG = document.querySelectorAll(".disableContextMenu");
-	CARD_IMG.forEach(element => {
-		element.addEventListener("contextmenu", e => e.preventDefault());
-	});
-}
+document.addEventListener("DOMContentLoaded", disableContextMenu);
