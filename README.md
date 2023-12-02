@@ -18,6 +18,8 @@
 
 ### assets/js/index.js
 
+- [x] Updated Meta logic to include fallbacks and attempt to resolve SEO issues.
+
 - [x] Refactored the code so the functions are executed when the DOM has loaded and not the entire page.
 
 - [x] Refactored with a ForEach to iterate through the `disableContextMenu` class collection.
@@ -25,6 +27,8 @@
 - [x] Initial Commit.
 
 ### netlify.toml
+
+- [x] Resolve issues with SVG Wakatime objects.
 
 - [x] Force redirect of netlify.app domain to https://weion.dev
 
