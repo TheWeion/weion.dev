@@ -54,9 +54,6 @@ const metaTags = generateMetaTags(
 	['facebook', 'twitter']
 );
 
-const lastMetaTag = document.querySelector('head > meta:last-of-type');
-lastMetaTag.insertAdjacentHTML('afterend', metaTags);
-
 /**
  * @function disableContextMenu
  * @description Disables context menu on right-click for card IMG elements.
@@ -68,4 +65,10 @@ const disableContextMenu = () => {
 	}
 };
 
-document.addEventListener("DOMContentLoaded", disableContextMenu);
+document.addEventListener("DOMContentLoaded", () => {
+	const lastMetaTag = document.querySelector('head > meta:last-of-type');
+	if (lastMetaTag) {
+		lastMetaTag.insertAdjacentHTML('afterend', metaTags);
+	}
+	disableContextMenu();
+});
