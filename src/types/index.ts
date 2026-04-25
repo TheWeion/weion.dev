@@ -30,20 +30,15 @@ export interface Operative {
  * A single archive entry rendered as a card in `ArchiveSection`.
  *
  * @remarks
- * Items are sourced from `src/data/projects.json` and validated against this
- * shape at import time. Empty-string values are treated as "absent" and the
+ * Items are sourced from `src/data/projects.json`
+ * Empty-string values are treated as "absent" and the
  * corresponding link/badge is omitted at render.
  */
 export interface Project {
-  /** Stable slug used as the React key. Must be unique across projects. */
   id: string;
-  /** Human-readable project title (e.g. `'weion.dev'`). */
   name: string;
-  /** Stylised callsign rendered as the secondary heading. */
   codename: string;
-  /** One- to two-sentence description displayed in the card body. */
   summary: string;
-  /** Tech stack tags rendered as chips beneath the summary. */
   stack: string[];
   /** Live deployment URL. Empty string disables the "live" link. */
   live: string;

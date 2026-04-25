@@ -167,15 +167,21 @@ function ProjectCard({ project, onOpenFeed }: ProjectCardProps) {
               <PlayCircle size={11} aria-hidden /> VIEW FEED
             </button>
           )}
-          <ProjectLink href={project.live} icon={<ExternalLink size={11} aria-hidden />}>
-            LIVE
-          </ProjectLink>
-          <ProjectLink href={project.fe} icon={<Github size={11} aria-hidden />}>
-            FE
-          </ProjectLink>
-          <ProjectLink href={project.be} icon={<Github size={11} aria-hidden />}>
-            BE
-          </ProjectLink>
+          {project?.live && (
+            <ProjectLink href={project.live} icon={<ExternalLink size={11} aria-hidden />}>
+              LIVE
+            </ProjectLink>
+          )}
+          {project?.fe && (
+            <ProjectLink href={project.fe} icon={<Github size={11} aria-hidden />}>
+              FE
+            </ProjectLink>
+          )}
+          {project?.be && (
+            <ProjectLink href={project.be} icon={<Github size={11} aria-hidden />}>
+              BE
+            </ProjectLink>
+          )}
         </div>
       </div>
     </div>
