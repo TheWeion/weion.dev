@@ -1,0 +1,277 @@
+@import "tailwindcss";
+
+/* ============================================================
+   THEME TOKENS (Tailwind v4 CSS-first config)
+   ============================================================ */
+@theme {
+  /* Atmospheric base */
+  --color-void:       #05080C;
+  --color-panel:      #0B1E2E;
+  --color-panel-2:    #132C3F;
+  --color-line:       #1E3A52;
+  --color-muted:      #6A7883;
+  --color-ink:        #C0CAD3;
+  --color-bright:     #E8F1F7;
+  --color-halo:       #B6D6EB;
+
+  /* Signal amber */
+  --color-amber:      #F5A623;
+  --color-amber-hot:  #FFB547;
+  --color-bronze:     #8A6A3A;
+
+  /* Glitch accents */
+  --color-cyan:       #03D8F3;
+  --color-magenta:    #FF0055;
+  --color-ok:         #7CE8C9;
+  --color-alarm:      #E4412B;
+
+  /* Typefaces */
+  --font-display: "Orbitron", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Rajdhani", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "Share Tech Mono", ui-monospace, monospace;
+}
+
+/* ============================================================
+   BASE LAYER
+   ============================================================ */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-void);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle custom scrollbar that matches the HUD palette. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-void);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border: 2px solid var(--color-void);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-bronze);
+  }
+
+  /* Focus ring — amber, slightly offset. */
+  :focus-visible {
+    outline: 1.5px solid var(--color-amber);
+    outline-offset: 2px;
+  }
+}
+
+/* ============================================================
+   HUD FX UTILITIES
+   ============================================================ */
+@layer utilities {
+  /* Scanlines — low-opacity repeating horizontal rows. */
+  .hud-scanlines::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2px,
+      rgba(182, 214, 235, 0.025) 3px,
+      rgba(182, 214, 235, 0.025) 4px
+    );
+    mix-blend-mode: overlay;
+  }
+
+  /* Vignette — dark edges to emphasise the screen centre. */
+  .hud-vignette::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 51;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(5, 8, 12, 0.6) 100%);
+  }
+
+  /* Ambient CRT flicker. */
+  .hud-flicker {
+    animation: hud-flicker 6s infinite;
+  }
+  @keyframes hud-flicker {
+    0%,
+    97%,
+    100% {
+      opacity: 1;
+    }
+    97.5% {
+      opacity: 0.93;
+    }
+    98.5% {
+      opacity: 0.96;
+    }
+  }
+
+  /* CRT scanlines — a 4px-pitch horizontal band pattern that rolls
+     continuously. Uses background-size so the scroll loops seamlessly. */
+  .hud-crt-scanlines {
+    background-image: linear-gradient(
+      to bottom,
+      rgba(182, 214, 235, 0.2) 0,
+      rgba(182, 214, 235, 0.2) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+    background-size: 100% 4px;
+    animation: hud-scanline-roll 1.5s linear infinite;
+    will-change: background-position;
+  }
+  @keyframes hud-scanline-roll {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 0 4px;
+    }
+  }
+
+  /* CRT refresh sweep — a soft bright band that travels top-to-bottom
+     on a slower cycle, evoking the vertical retrace. */
+  .hud-crt-sweep {
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(255, 255, 255, 0) 40%,
+      rgba(182, 214, 235, 0.18) 48%,
+      rgba(255, 255, 255, 0.28) 50%,
+      rgba(182, 214, 235, 0.18) 52%,
+      rgba(255, 255, 255, 0) 60%,
+      transparent 100%
+    );
+    background-size: 100% 220%;
+    background-repeat: no-repeat;
+    animation: hud-crt-sweep 5.5s linear infinite;
+    mix-blend-mode: screen;
+    will-change: background-position;
+  }
+  @keyframes hud-crt-sweep {
+    0% {
+      background-position: 0 -120%;
+    }
+    100% {
+      background-position: 0 220%;
+    }
+  }
+
+  /* Glitch text — duplicated layers with chromatic separation. */
+  .hud-glitch-text {
+    position: relative;
+    display: inline-block;
+  }
+  .hud-glitch-text::before,
+  .hud-glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .hud-glitch-text::before {
+    color: var(--color-magenta);
+    mix-blend-mode: screen;
+    animation: hud-glitch-a 4s infinite steps(2, end);
+    clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+    opacity: 0.7;
+  }
+  .hud-glitch-text::after {
+    color: var(--color-cyan);
+    mix-blend-mode: screen;
+    animation: hud-glitch-b 4.6s infinite steps(2, end);
+    clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+    opacity: 0.6;
+  }
+  @keyframes hud-glitch-a {
+    0%,
+    92%,
+    100% {
+      transform: translate(0, 0);
+    }
+    93% {
+      transform: translate(-2px, 0);
+    }
+    94% {
+      transform: translate(2px, 1px);
+    }
+    95% {
+      transform: translate(-1px, -1px);
+    }
+  }
+  @keyframes hud-glitch-b {
+    0%,
+    89%,
+    100% {
+      transform: translate(0, 0);
+    }
+    90% {
+      transform: translate(2px, 0);
+    }
+    91% {
+      transform: translate(-2px, -1px);
+    }
+    92% {
+      transform: translate(1px, 1px);
+    }
+  }
+
+  /* Infinite horizontal marquee for skill tickers. */
+  .hud-marquee {
+    animation: hud-marquee 55s linear infinite;
+    will-change: transform;
+  }
+  @keyframes hud-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-body {
+    font-family: var(--font-body);
+  }
+  .font-mono-tech {
+    font-family: var(--font-mono);
+  }
+}
+
+/* ============================================================
+   REDUCED-MOTION OVERRIDES
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .hud-flicker,
+  .hud-marquee,
+  .hud-radar-rotate,
+  .hud-radar-sweep,
+  .hud-crt-scanlines,
+  .hud-crt-sweep {
+    animation: none !important;
+  }
+  .hud-glitch-text::before,
+  .hud-glitch-text::after {
+    animation: none !important;
+  }
+}
