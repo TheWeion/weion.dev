@@ -1,0 +1,58 @@
+[
+  {
+    "id": "01",
+    "name": "Chatté Latté",
+    "codename": "JAVA-JOURNAL",
+    "summary": "Anonymous social media platform dedicated to the greatest beverage in a coder's arsenal — Java.",
+    "stack": ["React", "Node", "Express", "Mongo"],
+    "live": "https://ctrl-alt-elite-java-journal.netlify.app",
+    "fe": "https://github.com/theweion/fp-lap1-journaling-website-frontend",
+    "be": "https://github.com/theweion/fp-lap1-journaling-website-backend",
+    "preview": {
+      "webm": "/videos/projects/proj-01.webm",
+      "mp4": "/videos/projects/proj-01.mp4"
+    }
+  },
+  {
+    "id": "02",
+    "name": "Habi-TraX",
+    "codename": "HABIT-RECON",
+    "summary": "An easy-to-use app that tracks daily habits and helps users do them better through streaks and reinforcement.",
+    "stack": ["React", "Node", "MongoDB"],
+    "live": "https://habit-tracker-project-two.netlify.app",
+    "fe": "https://github.com/Tari38/Tari38-fp_lap2_project_client",
+    "be": "https://github.com/theweion/fp_lap2_project-server",
+    "preview": {
+      "webm": "/videos/projects/proj-02.webm",
+      "mp4": "/videos/projects/proj-02.mp4"
+    }
+  },
+  {
+    "id": "03",
+    "name": "Quizmasters 1",
+    "codename": "Q1-RACE-SIM",
+    "summary": "Online quiz game that introduces gamification principles in the form of a racing simulator.",
+    "stack": ["React", "Socket.io", "Node"],
+    "live": "https://q1-fp.netlify.app",
+    "fe": "https://github.com/theweion/Q1-quiz-game",
+    "be": "https://github.com/theweion/Q1-quiz-game-server",
+    "preview": {
+      "webm": "/videos/projects/proj-03.webm",
+      "mp4": "/videos/projects/proj-03.mp4"
+    }
+  },
+  {
+    "id": "04",
+    "name": "EnviroMates",
+    "codename": "ENVIRO-NET",
+    "summary": "Social platform encouraging users to clean their local communities — become an EnviroMate.",
+    "stack": ["React", "Node", "Express", "Mongo"],
+    "live": "https://www.enviromates.co.uk",
+    "fe": "https://github.com/TommyHacker/enviromates-client",
+    "be": "https://github.com/theweion/Enviromates_backend",
+    "preview": {
+      "webm": "/videos/projects/proj-04.webm",
+      "mp4": "/videos/projects/proj-04.mp4"
+    }
+  }
+]
