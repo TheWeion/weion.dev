@@ -110,8 +110,8 @@ export const coreSkills: string[] = [
  *
  * @remarks
  * Sourced from `projects.json` alongside this file so non-developers can edit
- * project copy without touching TypeScript. The shape is validated against
- * the {@link Project} interface at import time.
+ * project copy without touching TypeScript. The shape is type-checked against
+ * the {@link Project} interface at build time by `tsc`.
  */
 export const projects: Project[] = projectsData;
 
