@@ -1,159 +1,206 @@
-# Weion.Dev
+# weion.dev
+
+Personal portfolio site for Terry Fallows. A single-page application built on **Vite + React 19 + TypeScript** with a WebGL-driven heads-up-display aesthetic rendered via **React Three Fiber**.
+
+---
+
+## Stack
+
+| Layer | Library |
+| --- | --- |
+| Bundler / dev server | Vite 6 |
+| Framework | React 19 (SWC transform) |
+| Language | TypeScript 5 (strict) |
+| 3D | Three.js + `@react-three/fiber` + `@react-three/drei` |
+| Styling | Tailwind CSS v4 (CSS-first `@theme` config) |
+| Icons | `lucide-react` |
+| Lint + format | Biome 2 |
+| Deployment | Netlify (static build) |
+
+---
+
+## Quick start
+
+Node 20 or later is required (see `.nvmrc`).
+
+```bash
+npm install
+npm run dev          # http://localhost:5173 (host: true — accessible on LAN)
+npm run typecheck    # strict TS check, no emit
+npm run build        # production bundle to ./dist
+npm run preview      # serve ./dist locally
+
+npm run check        # Biome lint + format + import sort (read-only)
+npm run check:fix    # same, with safe auto-fixes applied
+npm run format       # format only (writes)
+npm run lint         # lint only
+
+npm run wakatime     # regenerate src/data/wakatime.generated.ts on demand
+```
+
+`predev` and `prebuild` automatically run `scripts/fetch-wakatime.mjs` so the generated telemetry module is always present before tsc/Vite read it.
+
+---
+
+## Project layout
+
+```
+src/
+├── main.tsx                       React entry point
+├── App.tsx                        Root — composes layered z-stack, sections, boot
+├── styles/
+│   └── index.css                  Tailwind v4 @theme tokens + HUD utilities
+├── types/
+│   └── index.ts                   TypeScript interfaces (Operative, Project, TelemetryBar, TelemetryHeatmapDay, PanelVariant)
+├── data/
+│   ├── portfolio.ts               All site content (bio, skills, projects, socials, telemetry re-exports)
+│   ├── projects.json              Project entries consumed by portfolio.ts
+│   └── wakatime.generated.ts      Auto-generated, gitignored — see scripts/fetch-wakatime.mjs
+├── lib/
+│   └── tokens.ts                  Colour + clip-path design tokens
+├── hooks/
+│   ├── useOnScreen.ts             IntersectionObserver one-shot trigger
+│   ├── useClock.ts                Live UTC + local time ticker for the chrome
+│   ├── usePrefersReducedMotion.ts OS Reduce-motion preference
+│   └── useSignalStrength.ts       navigator.connection-driven signal bars
+├── scene/                         React Three Fiber modules
+│   ├── HudScene.tsx               <Canvas> wrapper, fog, PerformanceMonitor, CameraParallax
+│   ├── HoloOrb.tsx                Layered holographic sphere + rings
+│   ├── HolographicMaterial.tsx    Custom shader material (fresnel rim + scrolling scanlines)
+│   ├── AmbientDust.tsx            Animated point-sprite particle field
+│   ├── GridFloor.tsx              drei <Grid> floor
+│   └── Lights.tsx                 Ambient + key + fill point lights
+├── components/
+│   ├── boot/BootSequence.tsx      Terminal-style loading overlay (z-[100])
+│   ├── chrome/
+│   │   ├── TopChrome.tsx          Fixed status bar (top, z-40)
+│   │   └── BottomChrome.tsx       Infinite skills marquee (bottom, z-40, two-copy seamless loop)
+│   ├── hud/
+│   │   ├── Panel.tsx              Beveled container with corner brackets
+│   │   ├── CornerBrackets.tsx
+│   │   ├── AngularButton.tsx      Cut-corner CTA
+│   │   ├── HologramPortrait.tsx   3D-styled portrait card used by HeroSection
+│   │   └── SectionHeading.tsx
+│   ├── text/
+│   │   ├── ScrambleText.tsx       Per-character scramble reveal
+│   │   └── GlitchText.tsx         Chromatic-aberration text effect
+│   └── overlays/
+│       └── ScreenOverlays.tsx     Amber color-grade lens + atmospheric wash + scanlines/vignette/flicker
+└── sections/                      One file per page section
+    ├── HeroSection.tsx
+    ├── DossierSection.tsx
+    ├── CapabilitiesSection.tsx
+    ├── ArchiveSection.tsx
+    ├── TelemetrySection.tsx       Language bars + 30-day waveform + 365-day activity heatmap
+    └── EofSection.tsx
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/a3309f19-bbdc-485b-a3ae-e96be0836b6f/deploy-status)](https://app.netlify.com/sites/weion/deploys)
+scripts/
+└── fetch-wakatime.mjs             Build-time WakaTime fetcher — runs on predev/prebuild
+```
 
-> A portfolio of all my coding achievements showcasing my love for technology.
+All internal imports use the `@/` path alias (mapped to `./src` in `vite.config.ts` and `tsconfig.app.json`).
 
-## Usage
+---
 
-* The live website can be accessed: [HERE](https://weion.dev)
+## Design tokens
 
-## Changelog
+The palette lives in two mirrored places:
 
-### assets/vid/projects/futureproof
+1. **CSS** — `src/styles/index.css` defines Tailwind v4 theme colours under `@theme { ... }`, so you can write `bg-panel`, `text-amber`, `border-line` etc. directly in JSX.
+2. **JS/TS** — `src/lib/tokens.ts` exports a typed `colors` object for inline `style={{ ... }}` usage (needed for shader uniforms, Three.js materials, gradients, and runtime colour math).
 
-- [x] Optimised project video files.
+When you change a value, **update both** so JSX and 3D code stay consistent.
 
-- [x] Added my final group project with futureproof (EnviroMates).
+The three visual axes:
 
-### assets/js/index.js
+- **Atmospheric base** — deep desaturated blues (`--color-void`, `--color-panel`, `--color-halo`) for the ambient sci-fi tone.
+- **Signal amber** — warm orange (`--color-amber`, `--color-amber-hot`) for active/interactive elements.
+- **Glitch accents** — hot cyan and magenta (`--color-cyan`, `--color-magenta`) used for chromatic-aberration split on hero text.
 
-- [x] Updated Meta logic to include fallbacks and attempt to resolve SEO issues.
+---
 
-- [x] Refactored the code so the functions are executed when the DOM has loaded and not the entire page.
+## Reduced motion
 
-- [x] Refactored with a ForEach to iterate through the `disableContextMenu` class collection.
+`usePrefersReducedMotion()` returns `true` when the OS-level *Reduce motion* preference is set. When active:
 
-- [x] Initial Commit.
+- The boot sequence is skipped entirely (`onComplete` fires synchronously).
+- Ambient dust particles are not rendered.
+- Camera parallax is disabled.
+- CSS keyframe animations are suppressed via the `@media (prefers-reduced-motion: reduce)` block at the bottom of `index.css`: marquee scroll, glitch split, radar rotate/sweep, CRT scanlines/sweep, and the global flicker.
 
-### netlify.toml
+Never remove this — it's an accessibility requirement, not an aesthetic toggle. Any new animation work should also respect `reducedMotion`.
 
-- [x] Resolve issues with SVG Wakatime objects.
+---
 
-- [x] Force redirect of netlify.app domain to https://weion.dev
+## Performance notes
 
-- [x] Replaced Lap 2 deploy badge with Official Netlify Status badge.
+- `<Canvas>` pixel ratio is adaptive: it starts at `[1, 2]` and is stepped down to `[1, 1.5]` (medium) or `1` (low) at runtime by drei's `<PerformanceMonitor>`.
+- All `useFrame` loops mutate refs directly; no `setState` inside the frame loop.
+- Geometry, materials, and textures are created once inside `useMemo` or at module scope.
+- `three`, `@react-three/fiber` + `@react-three/drei`, and `@react-three/postprocessing` + `postprocessing` each get their own cacheable vendor chunk via `vite.config.ts` → `manualChunks`.
+- Static assets in `/assets/` are cached aggressively via `netlify.toml` (`Cache-Control: public, max-age=31536000, immutable`).
 
-- [x] Added Cloudfront proxy link to `script-src` to allow for CSS optimisations.
+### 3D quality ladder
 
-- [x] Implemented post-processing and Search Engine Optimisations on Netlify - Updated CSP to allow media from cloudflare.
+The scene reacts to sustained frame-rate drops so it stays responsive on weaker GPUs and under thermal throttling:
 
-- [x] Removed URL from Feature-Policy path to fix error.
+| Tier       | dpr cap    | Postprocessing                      | Ambient dust |
+| ---------- | ---------- | ----------------------------------- | ------------ |
+| **high**   | `[1, 2]`   | Bloom (0.9) + chromatic aberration  | on           |
+| **medium** | `[1, 1.5]` | Bloom (0.6) + chromatic aberration  | on           |
+| **low**    | `1`        | off                                 | off          |
 
-- [x] CSP 2: Electric Boogaloo (Reimplemented again).
+The `HoloOrb` inner mesh uses a lightweight port of Anderson Mancini's [`HolographicMaterial`](https://github.com/ektogamat/threejs-holographic-material) (MIT) — fresnel rim + scrolling scanlines driven by world Y. The source lives at `src/scene/HolographicMaterial.tsx`.
 
-- [x] Fixed CSP defect on Edge causing external SVGs being blocked on certain browsers.
+---
 
-- [x] Reimplemented CSP Header.
+## Deployment — Netlify
 
-- [x] Implemented HTTP Security Headers.
+The project is configured for Netlify out-of-the-box:
 
-- [x] Added netlify.toml to force redirect of netlify.app domain to https://weion.social.
+- `netlify.toml` — build command, publish dir (`dist`), security headers, asset cache policy.
+- `public/_redirects` — SPA fallback so client-side routes resolve to `index.html`.
+- Node 20 is pinned via `.nvmrc` and `NODE_VERSION` in `netlify.toml`.
+- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive.
+- `netlify-plugin-cache` persists `src/data/wakatime.generated.ts` across deploys (it's gitignored), so the WakaTime script can fall back to last-known-good data when a fetch fails.
 
-### index.html
+Connect the repo in Netlify's UI and it will auto-detect Vite. On every push to `main`, Netlify runs:
 
-- [x] Updated Job Title, replaced Stack Overflow button with a LinkedIn button, and updated Favicon.
+```bash
+npm install
+npm run build
+# publishes ./dist
+```
 
-- [x] Added Lap 4 project and card.
+The existing `weion.dev` custom domain and SSL are already configured in your Netlify dashboard — nothing to change there.
 
-- [x] Added Meta tags.
+---
 
-- [x] Replaced `oncontextmenu` events with class `disableContextMenu` which links to index.js - Complies with CSP. 
+## WakaTime telemetry
 
-- [x] Implemented ARIA roles to anchor buttons.
+The Telemetry section pulls real data from WakaTime at build time. Set `WAKATIME_API_KEY` in Netlify's environment variables (a personal API key in the form `waka_<uuid>`) and `scripts/fetch-wakatime.mjs` will hit four endpoints in parallel:
 
-- [x] Updated `button` JS document calls to `anchor` tag `href` attributes for hyperlinks to comply with CSP.
+- `/users/current/stats/last_7_days` — language bars + `daily_average` + `best_day`
+- `/users/current/summaries?range=last_30_days` — for the consecutive-day streak
+- `/users/current/stats/last_year` — top language for the year
+- `/users/current/summaries?start=…&end=…` — 365 days, used for the activity heatmap and year totals
 
-- [x] Added `disablePictureInPicture` attribute to `<video>` tag.
+The script writes `src/data/wakatime.generated.ts` (gitignored) which exports `telemetryBars`, `telemetryTiles`, `telemetryHeatmap`, and `telemetryYearTiles`. `portfolio.ts` re-exports these so section code keeps a single import site.
 
-- [x] Rerendered Project 1 video.
+If anything fails (missing key, network error, empty response), the script preserves the existing generated file rather than writing fakes — so a transient WakaTime outage doesn't degrade the live site. Only on the very first deploy with no cached file does it fall back to an empty bootstrap.
 
-- [x] Added Project 2.
+Refreshes happen on every deploy. To get continuously fresh numbers without a code push, add a Netlify scheduled build or a build hook fired on a cron.
 
-- [x] Removed Dummy Project 2.
+Run `npm run wakatime` locally to regenerate on demand (requires the same env var, e.g. via `.env`).
 
-- [x] Added Developer Stats section.
+---
 
-- [x] Implemented WebP for browsers that support it.
+## Content
 
-- [x] Implemented skill marquee feature to header via CSS.
+All copy, skills, and project data live in `src/data/portfolio.ts` (with project entries split out into `src/data/projects.json`). Edit those files to update anything visible — the components consume them reactively.
 
-- [x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
+---
 
-- [x] Added `muted` argument to video tag to attempt to fix WebM/MP4 autoplay on prod.
+## Aesthetic
 
-- [x] Tabs > Whitespace - need I say more?
-
-- [x] Fix Card positioning on mobile devices.
-
-- [x] Added Project 1.
-
-- [x] Removed Dummy Project 1.
-
-- [x] Added Netlify Status badges.
-
-- [x] Refactored Bootstrap 5 imports to use bundle instead of separate files.
-
-- [x] Added Comments where appropriate.
-
-- [x] Converted CSS to Bootstrap class flags for styling (i.e Cards and Header).
-
-- [x] Added titles to buttons for accessibility.
-
-- [x] Redesigned favicon so that it is easier to see in Tabs and Windows.
-
-- [x] Improved Hyperlink UX - Open in new Tab.
-
-- [x] Redesigned Website with new header and social icons through Bootstrap and CSS.
-
-- [x] Added content from the training week such as website projects.
-
-- [x] Implemented Bootstrap.
-
-### assets/css/main.css
-
-- [x] Implemented Media Query improvements for landscape mode on mobile devices.
-
-- [x] Optimised CSS file.
-
-- [x] Fixed defect with futureproof SVG logo button on Mozilla Firefox as `width` and `height` properties were not explictly defined per SVG spec.
-
-- [x] Optimised media queries to latest changes.
-
-- [x] Added Hover UX for Bootstrap cards.
-
-- [x] Added skill marquee feature to header.
-
-- [x] Refactored Header with `clip-path` making the arrowhead `div` redundant.
-
-- [x] Tabs > Whitespace - need I say more?
-
-- [x] Added Comments where appropriate.
-
-- [x] Cleaned up CSS utilising Bootstrap classes instead.
-
-- [x] Removed unneeded Media Query that was causing visual bug on iPhone SE and similar devices.
-
-- [x] Refactored H1 tag to get same effect as the previous implementation posed an accessability risk (e.g Screen Readers).
-
-- [x] Redesigned H1 Tag to use Horizontal Rule (centred underline) for desired efffect.
-
-- [x] Added Media Queries - Fixing Card scaling on large displays.
-
-- [x] Created `.disabled` id for Social Media buttons not currently in use.
-
-- [x] Redesigned Website with new header and social icons through Bootstrap and CSS.
-
-
-### img/fp-logo.svg
-
-- [x] Optimised SVG file.
-- [x] Added Anti-Aliasing to logo.
-
-## TODO
-
-- [ ] Implement GitHub API to get total contributions across the year, or utilise React component for contribution calandar.
-
-## Bugs
-
-- [ ] **Accessibility Issue (🔴):**  At Div `social-icons-list` - Keyboard events work with <kbd>Enter</kbd> but not <kbd>Space</kbd>, and as anchor tags are being used this could confuse screen readers unless a new approach is taken.
+The HUD treatment takes generic sci-fi visual language — angular clip-path panels, corner brackets, rotating radar rings, scanlines, chromatic aberration, scrambled terminal text, amber-on-blue atmospheric lighting — without referencing any branded intellectual property.
