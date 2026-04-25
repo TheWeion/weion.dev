@@ -19,7 +19,7 @@
     X-Permitted-Cross-Domain-Policies = "none"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Content-Security-Policy = "default-src 'self'; frame-ancestors 'self'; script-src 'self' d33wubrfki0l68.cloudfront.net 'report-sample' https://cdn.jsdelivr.net; style-src 'self' d33wubrfki0l68.cloudfront.net 'report-sample' cdn.jsdelivr.net fonts.googleapis.com; object-src 'self' wakatime.com; frame-src 'self' wakatime.com; img-src 'self' wakatime.com *.netlify.com badges.netlify.app cdn.jsdelivr.net d33wubrfki0l68.cloudfront.net fonts.gstatic.com; font-src 'self' cdn.jsdelivr.net fonts.googleapis.com fonts.gstatic.com; base-uri 'self'; form-action 'self'; connect-src 'self' cdn.jsdelivr.net fonts.googleapis.com fonts.gstatic.com; media-src 'self' d33wubrfki0l68.cloudfront.net;"
-    Feature-Policy = "camera 'none'; fullscreen 'self'; geolocation *; microphone 'none';"
+    Permissions-Policy = "camera=(), fullscreen=(self), geolocation=(), microphone=()"
 
 
 # Persist the gitignored WakaTime cache across deploys so the prebuild
