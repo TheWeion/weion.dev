@@ -1,9 +1,13 @@
 import { Pause, Play, Volume2, VolumeX, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CornerBrackets } from '@/components/hud/CornerBrackets';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { colors } from '@/lib/tokens';
 import type { Project } from '@/types';
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Props for {@link VideoFeedModal}.
@@ -44,6 +48,12 @@ function fmtTime(seconds: number): string {
  * prefers reduced motion the fade-in is skipped and the REC pulse is allowed
  * to run because it conveys live recording state, not decorative motion.
  *
+ * Accessibility: rendered into a `document.body` portal so the rest of the
+ * app (`#root`) can be marked `inert` while open — that prevents both
+ * keyboard focus and screen readers from reaching the background. Tab is
+ * trapped within the dialog (cycling first/last focusables), and focus is
+ * restored to whatever element triggered the open when the modal closes.
+ *
  * @example
  * ```tsx
  * const [feedFor, setFeedFor] = useState<Project | null>(null);
@@ -56,25 +66,27 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
   const reducedMotion = usePrefersReducedMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const open = project !== null;
+  const open = project?.preview != null;
 
+  // Open-time setup: scroll lock, mark the rest of the app inert, focus the
+  // close button, reset video state. Cleanup undoes them in reverse so focus
+  // is restored only after `inert` is gone.
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [open, onClose]);
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const root = document.getElementById('root');
+    const previousOverflow = document.body.style.overflow;
 
-  useEffect(() => {
-    if (!open) return;
+    document.body.style.overflow = 'hidden';
+    root?.setAttribute('inert', '');
     closeButtonRef.current?.focus();
+
     setCurrentTime(0);
     setPlaying(true);
     const v = videoRef.current;
@@ -85,17 +97,49 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
         setPlaying(false);
       });
     }
-  }, [open]);
 
-  // Lock background scroll while the modal is open.
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = previous;
+      root?.removeAttribute('inert');
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus?.();
     };
   }, [open]);
+
+  // Esc closes; Tab/Shift+Tab cycle within the dialog so focus can't escape.
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      const focusables = dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (!dialog.contains(active)) {
+        e.preventDefault();
+        first.focus();
+        return;
+      }
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open, onClose]);
 
   if (!project?.preview) return null;
 
@@ -129,7 +173,7 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  return (
+  return createPortal(
     <div
       className={`fixed inset-0 z-[80] flex items-center justify-center p-4 ${
         reducedMotion ? '' : 'transition-opacity duration-300'
@@ -154,6 +198,7 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
           Whichever is smaller wins, so on short/landscape tablets the modal
           shrinks horizontally instead of overflowing the viewport. */}
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={`Reconnaissance feed for ${project.name}`}
@@ -355,6 +400,7 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
