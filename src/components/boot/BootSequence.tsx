@@ -1,0 +1,149 @@
+import { useEffect, useMemo, useState } from 'react';
+import { ScrambleText } from '@/components/text/ScrambleText';
+import { colors } from '@/lib/tokens';
+
+/**
+ * Props for {@link BootSequence}.
+ */
+interface BootSequenceProps {
+  /**
+   * Fired once the boot animation has fully finished and the overlay is gone.
+   * `App` flips its `bootComplete` state in this callback to reveal `<main>`.
+   */
+  onComplete: () => void;
+  /**
+   * When true, the animation is bypassed and `onComplete` fires synchronously
+   * on mount. `App` passes the result of {@link usePrefersReducedMotion} so
+   * users with `prefers-reduced-motion: reduce` skip the boot sequence
+   * entirely.
+   *
+   * @defaultValue `false`
+   */
+  skip?: boolean;
+}
+
+/**
+ * One line of the terminal-style boot script.
+ */
+interface BootLine {
+  /** Delay (ms) after mount before this line is appended to the visible list. */
+  delay: number;
+  /** The line content. Rendered through {@link ScrambleText}. */
+  text: string;
+}
+
+/**
+ * Animated boot overlay. Renders a terminal-style sequence of scrambling lines
+ * on top of the app while it warms up, then fades out to reveal the HUD.
+ *
+ * @remarks
+ * Sits at `z-[100]`, above every other layer in `App.tsx` (chrome lives at
+ * `z-40`, scanlines at `z-[60]`), so it visually gates first paint of the
+ * scrolling sections — `App` keeps `<main>` at `opacity: 0` until
+ * {@link BootSequenceProps.onComplete} fires.
+ *
+ * Lines are revealed on independent timers (~350ms apart), the overlay starts
+ * fading at 2000ms, and `onComplete` fires at 2700ms (after the 700ms opacity
+ * transition completes). All timers are cleared on unmount. When `skip` is
+ * true the entire animation is bypassed and the callback fires immediately,
+ * which is how reduced-motion users land directly on the HUD.
+ *
+ * @example
+ * ```tsx
+ * const reducedMotion = usePrefersReducedMotion();
+ * const [bootComplete, setBootComplete] = useState(false);
+ *
+ * <BootSequence onComplete={() => setBootComplete(true)} skip={reducedMotion} />
+ * ```
+ */
+export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
+  const lines = useMemo<BootLine[]>(
+    () => [
+      { delay: 0, text: '> INITIATING REMOTE LINK ........' },
+      { delay: 350, text: '> ESTABLISHING SECURE CHANNEL ........' },
+      { delay: 700, text: '> DECRYPTING OPERATOR PROFILE ........' },
+      { delay: 1050, text: '> PROFILE: FALLOWS, T. — CLEARANCE GRANTED' },
+      { delay: 1400, text: '> WEION.DEV // ACCESS GRANTED. WELCOME.' },
+    ],
+    [],
+  );
+
+  const [visible, setVisible] = useState<BootLine[]>([]);
+  const [fading, setFading] = useState(false);
+
+  useEffect(() => {
+    if (skip) {
+      onComplete();
+      return;
+    }
+
+    const revealTimers = lines.map((line) =>
+      window.setTimeout(() => setVisible((current) => [...current, line]), line.delay),
+    );
+    const fadeTimer = window.setTimeout(() => setFading(true), 2000);
+    const completeTimer = window.setTimeout(() => onComplete(), 2700);
+
+    return () => {
+      for (const id of revealTimers) window.clearTimeout(id);
+      window.clearTimeout(fadeTimer);
+      window.clearTimeout(completeTimer);
+    };
+  }, [lines, onComplete, skip]);
+
+  return (
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-700 ${
+        fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
+      style={{ background: colors.void }}
+      aria-hidden={fading}
+    >
+      <div
+        className="absolute inset-0 opacity-60"
+        style={{
+          background:
+            'radial-gradient(ellipse at center, rgba(245,166,35,0.08) 0%, transparent 60%)',
+        }}
+      />
+      <div className="relative max-w-2xl w-full px-6 font-mono-tech text-sm md:text-base">
+        <div className="mb-6 flex items-center gap-3">
+          <span
+            aria-hidden
+            className="inline-block w-2 h-2 animate-pulse"
+            style={{ background: colors.amber }}
+          />
+          <span
+            className="font-body font-semibold uppercase"
+            style={{
+              color: colors.amber,
+              fontSize: 10,
+              letterSpacing: '0.35em',
+            }}
+          >
+            REMOTE TERMINAL // SECURE SHELL
+          </span>
+        </div>
+
+        {visible.map((line, i) => (
+          <div
+            key={line.delay}
+            className="mb-2"
+            style={{
+              color: i === visible.length - 1 ? colors.amberHot : colors.halo,
+            }}
+          >
+            <ScrambleText text={line.text} duration={500} />
+          </div>
+        ))}
+
+        <div className="mt-4 flex items-center gap-2">
+          <span
+            aria-hidden
+            className="inline-block w-2 h-4 animate-pulse"
+            style={{ background: colors.amber }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
