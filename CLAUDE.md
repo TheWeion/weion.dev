@@ -90,7 +90,7 @@ Netlify, configured in `netlify.toml`:
   - `/users/current/summaries?start=…&end=…` (365-day window) — for the year heatmap and year totals (the `range=last_year` shortcut is rejected by the summaries endpoint, so explicit dates are required)
 - **Fallback behavior**: if anything fails (missing key, malformed key, network/API error, empty response), the script does **not** write fake data. Instead it preserves the existing `wakatime.generated.ts` from the previous deploy, logging the reason. Only when no prior file exists does it write a minimal empty bootstrap so tsc/Vite can still compile.
 - The "preserve existing" path requires the file to survive across deploys. Since it's gitignored, `netlify-plugin-cache` is registered in `netlify.toml` to persist `src/data/wakatime.generated.ts` between builds. On the very first deploy the cache is empty and the script must successfully fetch.
-- Freshness is tied to deploy cadence. Netlify's scheduled builds (or a build hook) are the intended refresh mechanism; don't add runtime fetching.
+- Freshness is tied to deploy cadence. The scheduled Netlify function in `netlify/functions/trigger-rebuild.mjs` runs `@daily` and POSTs to the site's build hook (URL stored in the `BUILD_HOOK_URL` Netlify env var) so each deploy regenerates the telemetry. Don't add runtime fetching.
 - The script is deliberately dependency-free — it uses `fetch` built into Node 20+ and nothing from `node_modules`. Keep it that way; a stale lockfile shouldn't be able to break telemetry generation.
 
 ## Code style — Biome
