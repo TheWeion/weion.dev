@@ -151,7 +151,7 @@ function ProjectCard({ project, onOpenFeed }: ProjectCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-2 pt-4 border-t" style={{ borderColor: colors.line }}>
-          {project.preview && (
+          {project?.preview && (
             <button
               type="button"
               onClick={onOpenFeed}
