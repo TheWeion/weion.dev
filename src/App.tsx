@@ -22,14 +22,17 @@ import { TelemetrySection } from '@/sections/TelemetrySection';
  *
  * - `z-0` — {@link HudScene}, the R3F `<Canvas>` background (pinned via
  *   `fixed inset-0`).
- * - `z-[4]` / `z-[5]` — {@link ScreenOverlays}: gradient washes, scanlines,
- *   vignette, flicker, and chromatic aberration. Purely decorative CSS/SVG.
+ * - `z-[4]` / `z-[5]` — {@link ScreenOverlays} gradient washes (amber lens
+ *   and atmospheric radial). Purely decorative CSS.
  * - `z-10` — `<main>`, the scrolling content sections (hero through EOF).
  *   Hidden at opacity 0 until {@link BootSequence} signals complete.
  * - `z-40` — {@link TopChrome} / {@link BottomChrome}, the persistent HUD
  *   frame that stays pinned across scroll.
- * - `z-[60]` — {@link BootSequence} curtain while the boot animation runs.
- * - `z-[100]` — top-most reserved layer (focus rings, transient toasts).
+ * - `z-[60]` — {@link ScreenOverlays} scanlines / vignette / flicker layer,
+ *   above the chrome so the CRT FX cover everything.
+ * - `z-[80]` — `VideoFeedModal` when open, above chrome and FX but below
+ *   the boot curtain.
+ * - `z-[100]` — {@link BootSequence} curtain while the boot animation runs.
  *
  * `BootSequence` gates first paint of the scrolling content; it is skipped
  * automatically when {@link usePrefersReducedMotion} returns true. The same
