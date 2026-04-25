@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Personal portfolio site (weion.dev) for Terry Fallows. Single-page app with a WebGL-driven "HUD / operator console" aesthetic. Vite + React 19 + TypeScript + React Three Fiber, styled with Tailwind v4, deployed on Netlify. Node 20 (see `.nvmrc`).
+Personal portfolio site (weion.dev) for Terry Fallows. Single-page app with a WebGL-driven "HUD / operator console" aesthetic. Vite + React 19 + TypeScript + React Three Fiber, styled with Tailwind v4, deployed on Netlify. Node 24 (see `.nvmrc`).
 
 ## Commands
 
@@ -76,7 +76,7 @@ When adding a color, add it to both places using the same name (kebab-case in CS
 
 Netlify, configured in `netlify.toml`:
 
-- `publish = "dist"`, `NODE_VERSION = "20"`.
+- `publish = "dist"`, `NODE_VERSION = "24"`.
 - A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive or they will be blocked in production but fine in dev. Notable allow-listed origins: `cdn.jsdelivr.net`, `fonts.g{oogleapis,static}.com`, `d33wubrfki0l68.cloudfront.net`, `wakatime.com`, `*.netlify.com`.
 - `weion.netlify.app` 301s to `https://weion.dev`. There is also a SPA-style `public/_redirects`.
 - `/assets/*` is served with a 1-year immutable cache, so Vite's hashed asset filenames must not be bypassed.
@@ -91,7 +91,7 @@ Netlify, configured in `netlify.toml`:
 - **Fallback behavior**: if anything fails (missing key, malformed key, network/API error, empty response), the script does **not** write fake data. Instead it preserves the existing `wakatime.generated.ts` from the previous deploy, logging the reason. Only when no prior file exists does it write a minimal empty bootstrap so tsc/Vite can still compile.
 - The "preserve existing" path requires the file to survive across deploys. Since it's gitignored, `netlify-plugin-cache` is registered in `netlify.toml` to persist `src/data/wakatime.generated.ts` between builds. On the very first deploy the cache is empty and the script must successfully fetch.
 - Freshness is tied to deploy cadence. The scheduled Netlify function in `netlify/functions/trigger-rebuild.mjs` runs `@daily` and POSTs to the site's build hook (URL stored in the `BUILD_HOOK_URL` Netlify env var) so each deploy regenerates the telemetry. Don't add runtime fetching.
-- The script is deliberately dependency-free — it uses `fetch` built into Node 20+ and nothing from `node_modules`. Keep it that way; a stale lockfile shouldn't be able to break telemetry generation.
+- The script is deliberately dependency-free — it uses `fetch` built into Node 24 and nothing from `node_modules`. Keep it that way; a stale lockfile shouldn't be able to break telemetry generation.
 
 ## Code style — Biome
 
