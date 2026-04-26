@@ -1,7 +1,8 @@
 import { useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import type { Group, Mesh } from 'three';
 import { DoubleSide } from 'three';
+import { createGoldbergWireframe } from './goldbergGeometry';
 import { HolographicMaterial } from './HolographicMaterial';
 
 /**
@@ -33,6 +34,9 @@ export function HoloOrb() {
   const ring1Ref = useRef<Mesh>(null);
   const ring2Ref = useRef<Mesh>(null);
   const ring3Ref = useRef<Mesh>(null);
+
+  // Goldberg polyhedron wireframe
+  const shellGeometry = useMemo(() => createGoldbergWireframe(1.35, 2), []);
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
@@ -70,11 +74,10 @@ export function HoloOrb() {
         />
       </mesh>
 
-      {/* Outer wireframe shell */}
-      <mesh>
-        <icosahedronGeometry args={[1.35, 2]} />
-        <meshBasicMaterial color="#B6D6EB" wireframe transparent opacity={0.55} />
-      </mesh>
+      {/* Outer hexagonal shell — Goldberg polyhedron wireframe */}
+      <lineSegments geometry={shellGeometry}>
+        <lineBasicMaterial color="#B6D6EB" transparent opacity={0.55} />
+      </lineSegments>
 
       {/* Orbital rings */}
       <mesh ref={ring1Ref} rotation={[Math.PI / 2, 0, 0]}>
