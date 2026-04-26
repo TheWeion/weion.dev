@@ -27,7 +27,7 @@ export const colors = {
   panel: '#0B1E2E',
   panel2: '#132C3F',
   line: '#1E3A52',
-  muted: '#6A7883',
+  muted: '#7A8794',
   ink: '#C0CAD3',
   bright: '#E8F1F7',
   halo: '#B6D6EB',
