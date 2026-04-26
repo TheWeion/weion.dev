@@ -21,7 +21,7 @@ Personal portfolio site for Terry Fallows. A single-page application built on **
 
 ## Quick start
 
-Node 20 or later is required (see `.nvmrc`).
+Node 24 is pinned in `.nvmrc` (and in `netlify.toml` for production builds). The dev/build scripts run on any Node ≥ 20, but use `nvm use` to match the deploy environment exactly.
 
 ```bash
 npm install
@@ -46,8 +46,8 @@ npm run wakatime     # regenerate src/data/wakatime.generated.ts on demand
 
 ```
 src/
-├── main.tsx                       React entry point
-├── App.tsx                        Root — composes layered z-stack, sections, boot
+├── main.tsx                       React entry point — wires @fontsource imports + dev-only web-vitals logger
+├── App.tsx                        Root — composes layered z-stack, sections, boot; lazy-imports HudScene behind <Suspense>
 ├── styles/
 │   └── index.css                  Tailwind v4 @theme tokens + HUD utilities
 ├── types/
@@ -57,16 +57,18 @@ src/
 │   ├── projects.json              Project entries consumed by portfolio.ts
 │   └── wakatime.generated.ts      Auto-generated, gitignored — see scripts/fetch-wakatime.mjs
 ├── lib/
-│   └── tokens.ts                  Colour + clip-path design tokens
+│   ├── tokens.ts                  Colour + clip-path design tokens
+│   └── reportVitals.ts            Web-vitals console logger (loaded only in dev via dynamic import)
 ├── hooks/
 │   ├── useOnScreen.ts             IntersectionObserver one-shot trigger
 │   ├── useClock.ts                Live UTC + local time ticker for the chrome
 │   ├── usePrefersReducedMotion.ts OS Reduce-motion preference
 │   └── useSignalStrength.ts       navigator.connection-driven signal bars
 ├── scene/                         React Three Fiber modules
-│   ├── HudScene.tsx               <Canvas> wrapper, fog, PerformanceMonitor, CameraParallax
-│   ├── HoloOrb.tsx                Layered holographic sphere + rings
+│   ├── HudScene.tsx               <Canvas> wrapper, fog, PerformanceMonitor, deferred-frameloop, hover-only CameraParallax, optional r3f-perf overlay
+│   ├── HoloOrb.tsx                Holographic core + Goldberg-polyhedron hex shell + orbital rings
 │   ├── HolographicMaterial.tsx    Custom shader material (fresnel rim + scrolling scanlines)
+│   ├── goldbergGeometry.ts        Builds the dual-polyhedron line geometry for HoloOrb's hex shell
 │   ├── AmbientDust.tsx            Animated point-sprite particle field
 │   ├── GridFloor.tsx              drei <Grid> floor
 │   └── Lights.tsx                 Ambient + key + fill point lights
@@ -123,9 +125,10 @@ The three visual axes:
 
 `usePrefersReducedMotion()` returns `true` when the OS-level *Reduce motion* preference is set. When active:
 
-- The boot sequence is skipped entirely (`onComplete` fires synchronously).
+- The boot sequence is skipped entirely (`onComplete` fires synchronously, body scroll lock releases immediately).
 - Ambient dust particles are not rendered.
-- Camera parallax is disabled.
+- Camera parallax is disabled (and on touch-only devices the parallax listener is never wired regardless of this flag — pointer parallax is fundamentally a hover interaction).
+- The R3F `<Canvas>` switches to `frameloop="demand"` permanently, so the WebGL render loop doesn't run after the first paint.
 - CSS keyframe animations are suppressed via the `@media (prefers-reduced-motion: reduce)` block at the bottom of `index.css`: marquee scroll, glitch split, radar rotate/sweep, CRT scanlines/sweep, and the global flicker.
 
 Never remove this — it's an accessibility requirement, not an aesthetic toggle. Any new animation work should also respect `reducedMotion`.
@@ -134,11 +137,28 @@ Never remove this — it's an accessibility requirement, not an aesthetic toggle
 
 ## Performance notes
 
+### Critical-path
+- `HudScene` is `React.lazy`'d in `App.tsx`, so the ~335 KiB three+r3f+drei+postprocessing stack ships in its own chunks and stays off the critical path.
+- `index.html` carries a fixed-position static placeholder inside `#root` mirroring the first BootSequence line, so FCP fires on HTML parse instead of waiting for JS download/parse/execute. React replaces it on mount with the same visual.
+- `<body style="overflow:hidden">` in `index.html` locks scroll until `BootSequence` releases it via its `done` state — covers the placeholder window before React mounts as well as the React-rendered overlay.
+- The app stylesheet is **inlined** into `index.html` at build time by the `inlineAppStylesheet` Vite plugin so there is no render-blocking external CSS request.
+- Critical webfont woff2 files (`Rajdhani-400`, `Orbitron-700`) are **preloaded** via `<link rel="preload" as="font">` injected by the `preloadCriticalFonts` Vite plugin, so the browser fetches them in parallel with the inlined CSS instead of waiting for CSS parse.
+
+### Runtime
+- The `<Canvas>` mounts in `frameloop="demand"` and only switches to `"always"` on the first user signal (pointermove / scroll / touchstart / keydown) or after a 2.05 s fallback. Reduced-motion users stay in demand mode permanently.
 - `<Canvas>` pixel ratio is adaptive: it starts at `[1, 2]` and is stepped down to `[1, 1.5]` (medium) or `1` (low) at runtime by drei's `<PerformanceMonitor>`.
 - All `useFrame` loops mutate refs directly; no `setState` inside the frame loop.
 - Geometry, materials, and textures are created once inside `useMemo` or at module scope.
-- `three`, `@react-three/fiber` + `@react-three/drei`, and `@react-three/postprocessing` + `postprocessing` each get their own cacheable vendor chunk via `vite.config.ts` → `manualChunks`.
+
+### Bundling and caching
+- `three`, `@react-three/fiber` + `@react-three/drei`, and `@react-three/postprocessing` + `postprocessing` each get their own cacheable vendor chunk via `vite.config.ts` → `manualChunks`. `HudScene` produces its own chunk too, automatically, because `App.tsx` lazy-imports it.
+- Webfonts are self-hosted via `@fontsource/*` packages and ship under `/assets/`, inheriting the long-cache header below.
 - Static assets in `/assets/` are cached aggressively via `netlify.toml` (`Cache-Control: public, max-age=31536000, immutable`).
+- Production source maps are emitted (`build.sourcemap: true`) so crash reports stay debuggable and the Lighthouse "missing source maps" best-practices audit passes.
+
+### Diagnostics
+- Append `?perf` to any URL to mount the `r3f-perf` overlay (FPS, GPU memory, draw calls). Resolved at module load — toggling requires a reload, so the overlay stays out of every render path for normal visits.
+- Web-vitals (CLS / INP / LCP / FCP / TTFB) are logged to the console **in dev only** via a dynamic import gated on `import.meta.env.DEV`. Vite drops both the wrapper and the `web-vitals` package from the production bundle as dead code.
 
 ### 3D quality ladder
 
@@ -160,8 +180,9 @@ The project is configured for Netlify out-of-the-box:
 
 - `netlify.toml` — build command, publish dir (`dist`), security headers, asset cache policy.
 - `public/_redirects` — SPA fallback so client-side routes resolve to `index.html`.
-- Node 20 is pinned via `.nvmrc` and `NODE_VERSION` in `netlify.toml`.
-- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive.
+- `public/robots.txt` — explicit file so crawlers don't pick up the SPA fallback for `/robots.txt`. Add a real `public/sitemap.xml` if the site ever grows past a single route — same gotcha applies.
+- Node 24 is pinned via `.nvmrc` and `NODE_VERSION` in `netlify.toml`.
+- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive. `style-src` carries `'unsafe-inline'` because the build pipeline inlines the app stylesheet into `index.html`; React inline-style attributes were already implicitly relying on it.
 - `netlify-plugin-cache` persists `src/data/wakatime.generated.ts` across deploys (it's gitignored), so the WakaTime script can fall back to last-known-good data when a fetch fails.
 
 Connect the repo in Netlify's UI and it will auto-detect Vite. On every push to `main`, Netlify runs:

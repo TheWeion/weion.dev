@@ -33,21 +33,33 @@ The page is a stack of fixed/absolute layers, not a normal document flow. Z-indi
 
 | z-index   | Layer                                                                      |
 | --------- | -------------------------------------------------------------------------- |
-| `z-0`     | `HudScene` (R3F `<Canvas>`) — `Lights`, `HoloOrb`, `AmbientDust`, `GridFloor`, plus a `CameraParallax` helper that eases the camera toward the pointer. |
+| `z-0`     | `HudScene` (R3F `<Canvas>`) — `Lights`, `HoloOrb` (Goldberg-polyhedron wireframe shell + holographic core), `AmbientDust`, `GridFloor`, plus a `CameraParallax` helper that eases the camera toward the pointer. Lazy-loaded from `App.tsx` via `React.lazy` + `<Suspense>` so the ~335 KiB three+r3f stack stays off the critical path. |
 | `z-[4]`   | Amber color-graded lens (Halo-3-style) — sits over the 3D scene to push contrast down behind white text. |
 | `z-[5]`   | Atmospheric warm/cool radial wash + top/bottom dark gradient.              |
 | `z-10`    | `<main>` — scrolling sections (`Hero`, `Dossier`, `Capabilities`, `Archive`, `Telemetry`, `Eof`). Held at `opacity: 0` until `BootSequence` signals complete. |
 | `z-40`    | `TopChrome` / `BottomChrome` persistent HUD frame.                         |
 | `z-[60]`  | Scanlines / vignette / flicker overlay.                                    |
+| `z-[80]`  | `VideoFeedModal` when open — above chrome and FX but below the boot curtain. |
 | `z-[100]` | `BootSequence` overlay (gates first paint).                                |
 
 The amber lens (`z-[4]`) and atmospheric gradient (`z-[5]`) both live in `ScreenOverlays.tsx`. When adjusting overlay opacity, keep the amber lens stronger than the atmospheric — that's what gives white HUD copy enough contrast over the 3D scene.
 
-`BootSequence` gates first paint of content; it is skipped automatically when `usePrefersReducedMotion()` returns true. Any new animation work should also respect `reducedMotion` — the 3D scene already omits `AmbientDust` and the pointer parallax in that mode.
+`BootSequence` gates first paint of content; it is skipped automatically when `usePrefersReducedMotion()` returns true. Any new animation work should also respect `reducedMotion` — the 3D scene already omits `AmbientDust` and pointer parallax in that mode, **and** `<Canvas>` switches to `frameloop="demand"` permanently so the WebGL render loop doesn't run at all.
+
+`HudScene` also defers `frameloop="always"` for non-reduced-motion users until the first user signal (pointermove/scroll/touchstart/keydown) or a 2.05 s fallback. This was originally a Lighthouse-driven optimisation (the always-on render loop dominated TBT/TTI) but it also gives the page a quieter first second on real users. `CameraParallax` is hover-only — it skips the `pointermove` listener on touch-only devices (`(hover: hover)` query) and ignores `pointerType === 'touch'` on hybrid devices, so mobile scrolls don't drag the camera.
+
+### Static boot placeholder
+
+`index.html` ships with `<body style="overflow:hidden">` plus a fixed-position `<div>` inside `#root` that mirrors the first BootSequence line ("> INITIATING REMOTE LINK ........"). Two reasons:
+
+- **FCP** — the browser paints contentful pixels on HTML parse, before the JS bundle has to download/parse/execute on a throttled mobile CPU. React then overwrites the placeholder when it mounts.
+- **Scroll lock** — locked from the HTML so the user can't scroll past the placeholder before React mounts. `BootSequence` releases it via a `done` state set when `onComplete` fires (or immediately when `skip` is true).
+
+If you change the placeholder visual, keep it close to the React-rendered BootSequence — large CLS regressions show up here when the dimensions diverge.
 
 ### Directory conventions
 
-- `src/scene/` — R3F scene graph children (Three.js / drei). Anything that renders inside `<Canvas>` lives here.
+- `src/scene/` — R3F scene graph children (Three.js / drei). Anything that renders inside `<Canvas>` lives here. Pure utilities used by scene children also live here, e.g. `goldbergGeometry.ts` builds the dual-polyhedron line geometry consumed by `HoloOrb`'s outer hex shell.
 - `src/components/hud/` — reusable HUD primitives (`Panel`, `AngularButton`, `CornerBrackets`, `SectionHeading`, `HologramPortrait`). These apply the angular clip-paths from `src/lib/tokens.ts`.
 - `src/components/chrome/`, `components/overlays/`, `components/boot/`, `components/text/` — non-reusable layout/FX pieces.
 - `src/sections/` — one file per scrollable page section; these compose `hud/` primitives with data from `src/data/portfolio.ts`.
@@ -62,22 +74,30 @@ Colors and clip-paths are defined **twice** and must stay in sync:
 - `src/lib/tokens.ts` — `colors` and `clipPaths` used from JS/TSX (R3F materials, inline styles, data files).
 - `src/styles/index.css` — the same palette mirrored under Tailwind v4's `@theme` block as `--color-*` custom properties, which is what generates utilities like `bg-panel`, `text-amber`, `border-line`, etc.
 
-When adding a color, add it to both places using the same name (kebab-case in CSS, camelCase in TS). Typography tokens (`--font-display`, `--font-body`, `--font-mono` → Orbitron / Rajdhani / Share Tech Mono) live only in CSS.
+When adding a color, add it to both places using the same name (kebab-case in CSS, camelCase in TS). Typography tokens (`--font-display`, `--font-body`, `--font-mono` → Orbitron / Rajdhani / Share Tech Mono) live only in CSS. The fonts themselves are bundled via `@fontsource/*` packages — imports live at the top of `src/main.tsx`. Add a new weight by importing its `latin-<weight>.css` file there; Vite hashes the woff2 under `/assets/`.
 
 ### Path alias
 
 `@/*` → `./src/*`, configured in both `tsconfig.app.json` (for TS resolution) and `vite.config.ts` (for bundling). Use `@/...` for all intra-src imports.
 
-### Bundle splitting
+### Bundle splitting and build-time HTML transforms
 
-`vite.config.ts` manually chunks `three` and `@react-three/fiber` + `@react-three/drei` into separate vendor chunks — the R3F stack is ~the largest dependency and benefits from its own cacheable chunk. Preserve this split when touching build config.
+`vite.config.ts` manually chunks `three`, `@react-three/fiber` + `@react-three/drei`, and `@react-three/postprocessing` + `postprocessing` into separate vendor chunks — the R3F stack is ~the largest dependency and benefits from its own cacheable chunks. `HudScene` is a separate chunk too because `App.tsx` lazy-imports it. Preserve all of these splits when touching build config.
+
+Two custom in-config Vite plugins run during `vite build`:
+
+- `preloadCriticalFonts` — scans the bundle for woff2 assets matching `rajdhani-latin-400` and `orbitron-latin-700` and injects `<link rel="preload" as="font">` tags so the browser fetches them in parallel with the inlined CSS.
+- `inlineAppStylesheet` — replaces the `<link rel="stylesheet" href="...index-*.css">` in `index.html` with a `<style>` block containing the file contents. Eliminates the only render-blocking subresource. Requires `style-src 'unsafe-inline'` in the production CSP — see `netlify.toml`.
+
+`build.sourcemap` is enabled in production so the best-practices source-map audit passes and crash reports are debuggable.
 
 ## Deployment
 
 Netlify, configured in `netlify.toml`:
 
 - `publish = "dist"`, `NODE_VERSION = "24"`.
-- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive or they will be blocked in production but fine in dev. Notable allow-listed origins: `cdn.jsdelivr.net`, `d33wubrfki0l68.cloudfront.net`, `wakatime.com`, `*.netlify.com`. Webfonts are self-hosted via `@fontsource/*` packages and ship from same-origin under `/assets/`.
+- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive or they will be blocked in production but fine in dev. Notable allow-listed origins: `cdn.jsdelivr.net`, `d33wubrfki0l68.cloudfront.net`, `wakatime.com`, `*.netlify.com`. Webfonts are self-hosted via `@fontsource/*` packages and ship from same-origin under `/assets/`. `style-src` carries `'unsafe-inline'` because the build pipeline inlines the app stylesheet into `index.html` (and React inline-style attributes were already implicitly relying on it); leave it unless you switch to a nonce/hash strategy.
+- `public/robots.txt` exists so the SPA fallback in `public/_redirects` doesn't serve `index.html` for `/robots.txt` and fail the Lighthouse SEO audit. Same applies if you ever add `/sitemap.xml` — must be a real file under `public/`, not a SPA-fallback HTML page.
 - `weion.netlify.app` 301s to `https://weion.dev`. There is also a SPA-style `public/_redirects`.
 - `/assets/*` is served with a 1-year immutable cache, so Vite's hashed asset filenames must not be bypassed.
 
