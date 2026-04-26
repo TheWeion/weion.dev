@@ -94,7 +94,13 @@ function CameraParallax({ enabled }: CameraParallaxProps) {
   useEffect(() => {
     if (!enabled) return;
 
+    // Disable pointer parallax on touch devices
+    if (typeof window !== 'undefined' && !window.matchMedia('(hover: hover)').matches) {
+      return;
+    }
+
     const handlePointerMove = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') return;
       const rect = gl.domElement.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
       const nx = (event.clientX - rect.left) / rect.width - 0.5;
