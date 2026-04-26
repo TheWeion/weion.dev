@@ -16,7 +16,12 @@
     <meta property="og:url" content="https://www.weion.dev" />
 
   </head>
-  <body>
+  <!--
+    Scroll is locked here so the user can't scroll past the static
+    placeholder before React mounts. BootSequence releases the lock when
+    the boot animation finishes (or immediately under reduced-motion).
+  -->
+  <body style="overflow:hidden">
     <div id="root">
       <!--
         Static boot-screen placeholder.

@@ -70,9 +70,11 @@ export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
 
   const [visible, setVisible] = useState<BootLine[]>([]);
   const [fading, setFading] = useState(false);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     if (skip) {
+      setDone(true);
       onComplete();
       return;
     }
@@ -81,7 +83,10 @@ export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
       window.setTimeout(() => setVisible((current) => [...current, line]), line.delay),
     );
     const fadeTimer = window.setTimeout(() => setFading(true), 2000);
-    const completeTimer = window.setTimeout(() => onComplete(), 2700);
+    const completeTimer = window.setTimeout(() => {
+      setDone(true);
+      onComplete();
+    }, 2700);
 
     return () => {
       for (const id of revealTimers) window.clearTimeout(id);
@@ -89,6 +94,20 @@ export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
       window.clearTimeout(completeTimer);
     };
   }, [lines, onComplete, skip]);
+
+  // Body scroll is locked from index.html so the page can't scroll behind
+  // the placeholder before React mounts. Release it once the overlay is gone
+  // (or immediately for reduced-motion users who skip the sequence entirely).
+  useEffect(() => {
+    if (skip || done) {
+      document.body.style.overflow = '';
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [skip, done]);
 
   return (
     <div
