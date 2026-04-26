@@ -17,7 +17,15 @@
 
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        Static boot-screen placeholder.
+        Displaying something for user's with slow connections on initial load
+      -->
+      <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#05080C;color:#FFB547;font-family:'Share Tech Mono','ui-monospace',monospace;font-size:14px;letter-spacing:0.05em">
+        &gt; INITIATING REMOTE LINK ........
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
