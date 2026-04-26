@@ -1,16 +1,20 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { BootSequence } from '@/components/boot/BootSequence';
 import { BottomChrome } from '@/components/chrome/BottomChrome';
 import { TopChrome } from '@/components/chrome/TopChrome';
 import { ScreenOverlays } from '@/components/overlays/ScreenOverlays';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
-import { HudScene } from '@/scene/HudScene';
 import { ArchiveSection } from '@/sections/ArchiveSection';
 import { CapabilitiesSection } from '@/sections/CapabilitiesSection';
 import { DossierSection } from '@/sections/DossierSection';
 import { EofSection } from '@/sections/EofSection';
 import { HeroSection } from '@/sections/HeroSection';
 import { TelemetrySection } from '@/sections/TelemetrySection';
+
+// The R3F + three bundle is the largest dep on the page (~335 KiB). Splitting
+// it behind React.lazy keeps the WebGL stack off the critical path so first
+// paint of the HUD content doesn't wait on Three's parse/eval cost.
+const HudScene = lazy(() => import('@/scene/HudScene').then((m) => ({ default: m.HudScene })));
 
 /**
  * Top-level composition root for weion.dev. Stacks the WebGL background, the
@@ -59,7 +63,9 @@ export default function App() {
 
       {/* Layer 0: 3D background scene */}
       <div className="fixed inset-0 z-0">
-        <HudScene reducedMotion={reducedMotion} />
+        <Suspense fallback={null}>
+          <HudScene reducedMotion={reducedMotion} />
+        </Suspense>
       </div>
 
       {/* Layer 5+: atmospheric gradients, scanlines, vignette, flicker */}
