@@ -2,12 +2,71 @@ import { PerformanceMonitor } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, ChromaticAberration, EffectComposer } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
+import { Perf } from 'r3f-perf';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { FogExp2, Vector2 } from 'three';
 import { AmbientDust } from './AmbientDust';
 import { GridFloor } from './GridFloor';
 import { HoloOrb } from './HoloOrb';
 import { Lights } from './Lights';
+
+// Enabled when the page URL carries `?perf` (or `?perf=1`). Resolved once at
+// module load — toggling requires a reload, which keeps the perf overlay out
+// of every render path for normal visits.
+const perfOverlayEnabled =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('perf');
+
+const PERF_OVERLAY_STYLE = {
+  transform: 'scale(1.5)',
+  transformOrigin: 'top left',
+} as const;
+
+/**
+ * Re-parents the r3f-perf overlay div from `gl.domElement.parentNode` (the
+ * canvas wrapper, which lives at z-0 and is `position: fixed` — always a new
+ * stacking context) into `document.body`, so the overlay escapes that
+ * context and renders above every HUD layer.
+ *
+ * @remarks
+ * r3f-perf's `HtmlMinimal` appends a fresh `<div>` next to the canvas on
+ * mount and removes it on unmount. We watch for that append, hoist it to
+ * `document.body`, then put it back before unmount so the library's own
+ * `target.removeChild(el)` cleanup still finds the node where it expects.
+ * Returns `null`; behavior-only.
+ */
+function PerfOverlayPortal() {
+  const gl = useThree((state) => state.gl);
+
+  useEffect(() => {
+    const target = gl.domElement.parentNode as HTMLElement | null;
+    if (!target) return;
+
+    let movedNode: HTMLElement | null = null;
+    const hoist = () => {
+      if (movedNode) return;
+      const candidate = Array.from(target.children).find(
+        (child): child is HTMLElement => child instanceof HTMLElement && child !== gl.domElement,
+      );
+      if (candidate) {
+        movedNode = candidate;
+        document.body.appendChild(candidate);
+      }
+    };
+
+    hoist();
+    const observer = new MutationObserver(hoist);
+    observer.observe(target, { childList: true });
+
+    return () => {
+      observer.disconnect();
+      if (movedNode && document.body.contains(movedNode)) {
+        target.appendChild(movedNode);
+      }
+    };
+  }, [gl]);
+
+  return null;
+}
 
 interface CameraParallaxProps {
   /**
@@ -142,6 +201,13 @@ export function HudScene({ reducedMotion = false }: HudSceneProps) {
         </Suspense>
         <CameraParallax enabled={!reducedMotion} />
       </PerformanceMonitor>
+
+      {perfOverlayEnabled && (
+        <>
+          <Perf position="top-left" style={PERF_OVERLAY_STYLE} />
+          <PerfOverlayPortal />
+        </>
+      )}
 
       {postEnabled && (
         <EffectComposer enableNormalPass={false} multisampling={0}>
