@@ -33,5 +33,8 @@ Thumbs.db
 # Typescript
 *.tsbuildinfo
 
+# Performance
+.unlighthouse
+
 # Generated at build time by scripts/fetch-wakatime.mjs
 src/data/wakatime.generated.ts
