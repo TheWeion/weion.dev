@@ -18,7 +18,7 @@
     X-Content-Type-Options = "nosniff"
     X-Permitted-Cross-Domain-Policies = "none"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-    Content-Security-Policy = "default-src 'self'; frame-ancestors 'self'; script-src 'self' d33wubrfki0l68.cloudfront.net 'report-sample' https://cdn.jsdelivr.net; style-src 'self' d33wubrfki0l68.cloudfront.net 'report-sample' cdn.jsdelivr.net fonts.googleapis.com; object-src 'self' wakatime.com; frame-src 'self' wakatime.com; img-src 'self' wakatime.com *.netlify.com badges.netlify.app cdn.jsdelivr.net d33wubrfki0l68.cloudfront.net fonts.gstatic.com; font-src 'self' cdn.jsdelivr.net fonts.googleapis.com fonts.gstatic.com; base-uri 'self'; form-action 'self'; connect-src 'self' cdn.jsdelivr.net fonts.googleapis.com fonts.gstatic.com; media-src 'self' d33wubrfki0l68.cloudfront.net;"
+    Content-Security-Policy = "default-src 'self'; frame-ancestors 'self'; script-src 'self' d33wubrfki0l68.cloudfront.net 'report-sample' https://cdn.jsdelivr.net; style-src 'self' d33wubrfki0l68.cloudfront.net 'report-sample' cdn.jsdelivr.net; object-src 'self' wakatime.com; frame-src 'self' wakatime.com; img-src 'self' wakatime.com *.netlify.com badges.netlify.app cdn.jsdelivr.net d33wubrfki0l68.cloudfront.net; font-src 'self' cdn.jsdelivr.net; base-uri 'self'; form-action 'self'; connect-src 'self' cdn.jsdelivr.net; media-src 'self' d33wubrfki0l68.cloudfront.net;"
     Permissions-Policy = "camera=(), fullscreen=(self), geolocation=(), microphone=()"
 
 

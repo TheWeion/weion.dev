@@ -77,7 +77,7 @@ When adding a color, add it to both places using the same name (kebab-case in CS
 Netlify, configured in `netlify.toml`:
 
 - `publish = "dist"`, `NODE_VERSION = "24"`.
-- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive or they will be blocked in production but fine in dev. Notable allow-listed origins: `cdn.jsdelivr.net`, `fonts.g{oogleapis,static}.com`, `d33wubrfki0l68.cloudfront.net`, `wakatime.com`, `*.netlify.com`.
+- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive or they will be blocked in production but fine in dev. Notable allow-listed origins: `cdn.jsdelivr.net`, `d33wubrfki0l68.cloudfront.net`, `wakatime.com`, `*.netlify.com`. Webfonts are self-hosted via `@fontsource/*` packages and ship from same-origin under `/assets/`.
 - `weion.netlify.app` 301s to `https://weion.dev`. There is also a SPA-style `public/_redirects`.
 - `/assets/*` is served with a 1-year immutable cache, so Vite's hashed asset filenames must not be bypassed.
 
