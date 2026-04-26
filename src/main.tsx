@@ -25,3 +25,8 @@ createRoot(rootElement).render(
     <App />
   </StrictMode>,
 );
+
+// Web vitals are only logged in dev.
+if (import.meta.env.DEV) {
+  import('@/lib/reportVitals').then(({ reportVitals }) => reportVitals());
+}
