@@ -116,26 +116,6 @@ export const coreSkills: string[] = [
 export const projects: Project[] = projectsData;
 
 /**
- * Re-exports of WakaTime-derived telemetry data consumed by
- * {@link TelemetrySection}.
- *
- * @remarks
- * `wakatime.generated.ts` is **auto-generated and gitignored**. It is written
- * by `scripts/fetch-wakatime.mjs` during the `predev` / `prebuild` lifecycle
- * hook: with `WAKATIME_API_KEY` set it pulls real stats from the WakaTime
- * API, and without the key it writes placeholder data so builds never fail.
- * Re-exporting here keeps the rest of the app importing from a single
- * `@/data/portfolio` site rather than reaching into the generated file
- * directly. See `CLAUDE.md` for the full env-var setup.
- */
-export {
-  telemetryBars,
-  telemetryHeatmap,
-  telemetryTiles,
-  telemetryYearTiles,
-} from './wakatime.generated';
-
-/**
  * External profile links rendered in the hero CTAs and {@link BottomChrome}.
  */
 export const socials = {

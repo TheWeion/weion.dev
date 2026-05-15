@@ -5,9 +5,7 @@
   "type": "module",
   "description": "Portfolio site for Terry Fallows — WebGL-driven HUD aesthetic, built on Vite + React 19 + TypeScript + React Three Fiber.",
   "scripts": {
-    "predev": "node scripts/fetch-wakatime.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/fetch-wakatime.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
@@ -15,8 +13,7 @@
     "format": "biome format --write",
     "format:check": "biome format",
     "check": "biome check",
-    "check:fix": "biome check --write",
-    "wakatime": "node scripts/fetch-wakatime.mjs"
+    "check:fix": "biome check --write"
   },
   "dependencies": {
     "@fontsource/orbitron": "^5.2.8",
@@ -42,7 +39,6 @@
     "@types/three": "^0.170.0",
     "@unlighthouse/cli": "^0.17.9",
     "@vitejs/plugin-react-swc": "^3.7.0",
-    "netlify-plugin-cache": "^1.0.3",
     "rollup-plugin-visualizer": "^7.0.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",

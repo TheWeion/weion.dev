@@ -34,11 +34,7 @@ npm run check        # Biome lint + format + import sort (read-only)
 npm run check:fix    # same, with safe auto-fixes applied
 npm run format       # format only (writes)
 npm run lint         # lint only
-
-npm run wakatime     # regenerate src/data/wakatime.generated.ts on demand
 ```
-
-`predev` and `prebuild` automatically run `scripts/fetch-wakatime.mjs` so the generated telemetry module is always present before tsc/Vite read it.
 
 ---
 
@@ -53,9 +49,8 @@ src/
 ├── types/
 │   └── index.ts                   TypeScript interfaces (Operative, Project, TelemetryBar, TelemetryHeatmapDay, PanelVariant)
 ├── data/
-│   ├── portfolio.ts               All site content (bio, skills, projects, socials, telemetry re-exports)
-│   ├── projects.json              Project entries consumed by portfolio.ts
-│   └── wakatime.generated.ts      Auto-generated, gitignored — see scripts/fetch-wakatime.mjs
+│   ├── portfolio.ts               All site content (bio, skills, projects, socials)
+│   └── projects.json              Project entries consumed by portfolio.ts
 ├── lib/
 │   ├── tokens.ts                  Colour + clip-path design tokens
 │   └── reportVitals.ts            Web-vitals console logger (loaded only in dev via dynamic import)
@@ -63,7 +58,8 @@ src/
 │   ├── useOnScreen.ts             IntersectionObserver one-shot trigger
 │   ├── useClock.ts                Live UTC + local time ticker for the chrome
 │   ├── usePrefersReducedMotion.ts OS Reduce-motion preference
-│   └── useSignalStrength.ts       navigator.connection-driven signal bars
+│   ├── useSignalStrength.ts       navigator.connection-driven signal bars
+│   └── useWakatime.ts             Runtime fetch of WakaTime share-chart JSON + hex→sci-fi palette mapping
 ├── scene/                         React Three Fiber modules
 │   ├── HudScene.tsx               <Canvas> wrapper, fog, PerformanceMonitor, deferred-frameloop, hover-only CameraParallax, optional r3f-perf overlay
 │   ├── HoloOrb.tsx                Holographic core + Goldberg-polyhedron hex shell + orbital rings
@@ -95,9 +91,6 @@ src/
     ├── ArchiveSection.tsx
     ├── TelemetrySection.tsx       Language bars + 30-day waveform + 365-day activity heatmap
     └── EofSection.tsx
-
-scripts/
-└── fetch-wakatime.mjs             Build-time WakaTime fetcher — runs on predev/prebuild
 ```
 
 All internal imports use the `@/` path alias (mapped to `./src` in `vite.config.ts` and `tsconfig.app.json`).
@@ -183,8 +176,7 @@ The project is configured for Netlify out-of-the-box:
 - `public/_redirects` — SPA fallback so client-side routes resolve to `index.html`.
 - `public/robots.txt` — explicit file so crawlers don't pick up the SPA fallback for `/robots.txt`. Add a real `public/sitemap.xml` if the site ever grows past a single route — same gotcha applies.
 - Node 24 is pinned via `.nvmrc` and `NODE_VERSION` in `netlify.toml`.
-- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive. `style-src` carries `'unsafe-inline'` because the build pipeline inlines the app stylesheet into `index.html`; React inline-style attributes were already implicitly relying on it.
-- `netlify-plugin-cache` persists `src/data/wakatime.generated.ts` across deploys (it's gitignored), so the WakaTime script can fall back to last-known-good data when a fetch fails.
+- A strict CSP is enforced via response headers. New external origins (fonts, images, scripts, media, frames) must be explicitly added to the relevant `*-src` directive. `style-src` carries `'unsafe-inline'` because the build pipeline inlines the app stylesheet into `index.html`; React inline-style attributes were already implicitly relying on it. `connect-src` includes `wakatime.com` so the `useWakatime` hook can fetch the public share-chart JSON at runtime.
 
 Connect the repo in Netlify's UI and it will auto-detect Vite. On every push to `main`, Netlify runs:
 
@@ -200,20 +192,17 @@ The existing `weion.dev` custom domain and SSL are already configured in your Ne
 
 ## WakaTime telemetry
 
-The Telemetry section pulls real data from WakaTime at build time. Set `WAKATIME_API_KEY` in Netlify's environment variables (a personal API key in the form `waka_<uuid>`) and `scripts/fetch-wakatime.mjs` will hit four endpoints in parallel:
+The Telemetry section pulls real data from WakaTime **at runtime** in the browser via `src/hooks/useWakatime.ts`. It fetches three public share-chart JSON endpoints in parallel — no API key, no `.env`, no scheduled rebuild needed:
 
-- `/users/current/stats/last_7_days` — language bars + `daily_average` + `best_day`
-- `/users/current/summaries?range=last_30_days` — for the consecutive-day streak
-- `/users/current/stats/last_year` — top language for the year
-- `/users/current/summaries?start=…&end=…` — 365 days, used for the activity heatmap and year totals
+- **Daily activity (last 30 days)** — drives the audio-waveform visualization and the AVG/DAY, PEAK, and STREAK tiles.
+- **Language distribution (last 30 days)** — drives the language bars and the year-panel TOP LANG tile.
+- **Activity (last 365 days)** — drives the year heatmap (quartile-bucketed levels 0-4) and the TOTAL / BEST DAY tiles.
 
-The script writes `src/data/wakatime.generated.ts` (gitignored) which exports `telemetryBars`, `telemetryTiles`, `telemetryHeatmap`, and `telemetryYearTiles`. `portfolio.ts` re-exports these so section code keeps a single import site.
+WakaTime refreshes the share JSON daily on their side, so freshness is tied to the user's visit rather than the deploy cadence. The CSP allows `wakatime.com` in `connect-src` for these browser fetches.
 
-If anything fails (missing key, network error, empty response), the script preserves the existing generated file rather than writing fakes — so a transient WakaTime outage doesn't degrade the live site. Only on the very first deploy with no cached file does it fall back to an empty bootstrap.
+Recognizable brand colors (HSL saturation ≥ 10%) keep their hue but get clamped into the HUD's "neon accent" S/L range (saturation ≥ 80%, lightness in `[0.50, 0.65]`) via `sciFiTune` — so TypeScript stays blue and JavaScript stays yellow, but Markdown's dark navy lifts off the panel background and every bar carries the same vibrancy as the cyan/amber/magenta palette tokens. Monochrome languages (JSON's `#292929`, plain-text grays) fall back to a sci-fi token from `@/lib/tokens` chosen by lightness.
 
-Refreshes happen on every deploy. To get continuously fresh numbers without a code push, add a Netlify scheduled build or a build hook fired on a cron.
-
-Run `npm run wakatime` locally to regenerate on demand (requires the same env var, e.g. via `.env`).
+On fetch failure the hook surfaces an `error` and the section renders empty panels rather than fakes; the layout reserves space so the loading state doesn't shift content.
 
 ---
 

@@ -1,13 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Panel } from '@/components/hud/Panel';
 import { SectionHeading } from '@/components/hud/SectionHeading';
-import {
-  telemetryBars,
-  telemetryHeatmap,
-  telemetryTiles,
-  telemetryYearTiles,
-} from '@/data/portfolio';
 import { useOnScreen } from '@/hooks/useOnScreen';
+import { useWakatime } from '@/hooks/useWakatime';
 import { colors } from '@/lib/tokens';
 import type { TelemetryBar, TelemetryHeatmapDay } from '@/types';
 
@@ -30,6 +25,8 @@ interface BarRowProps {
  * The fill width starts at 0 and is set to `bar.pct` via a `setTimeout` keyed
  * on `delay`, so consecutive rows wipe in with a stagger. The CSS transition
  * does the actual easing — the JS only flips the target width once per mount.
+ * Re-runs the timer if `bar.pct` changes (e.g. when the async WakaTime fetch
+ * resolves after the section has already entered the viewport).
  */
 function BarRow({ bar, delay, trigger }: BarRowProps) {
   const [width, setWidth] = useState(0);
@@ -76,36 +73,40 @@ function BarRow({ bar, delay, trigger }: BarRowProps) {
  * Props for {@link Waveform}.
  */
 interface WaveformProps {
-  /** When true, raise each bar from a 2% baseline to its seeded height. */
+  /** When true, raise each bar from a 2% baseline to its data-driven height. */
   trigger: boolean;
+  /**
+   * Normalized 0-1 heights, one per day. When empty (data still loading) the
+   * waveform renders as a flat baseline of zero-height bars.
+   */
+  heights: number[];
 }
 
 /**
- * 30-bar decorative audio-waveform visualization.
+ * Audio-waveform-styled visualization of daily coding activity over the last
+ * 30 days.
  *
  * @remarks
- * Heights are seeded from `Math.random()` once per mount inside `useMemo` and
- * never re-rolled — the bars are static after first paint. Because the seed
- * is unbatched (no `useId`/server seed), SSR would produce a hydration
- * mismatch; this site is client-rendered, so that is fine. Per-bar
- * `transitionDelay` produces the left-to-right sweep when `trigger` flips.
+ * Heights come from the WakaTime "ACTIVITY WAVEFORM" share JSON, normalized
+ * so the peak day is 1.0. Until {@link useWakatime} resolves `heights` is
+ * empty and the component renders a 30-bar baseline placeholder so the panel
+ * height stays stable. Per-bar `transitionDelay` produces the left-to-right
+ * sweep when `trigger` flips.
  */
-function Waveform({ trigger }: WaveformProps) {
-  // Deterministic-ish noise is seeded per-mount, then rendered statically.
-  const bars = useMemo(() => {
-    const out: { id: string; v: number }[] = [];
-    for (let i = 0; i < 30; i++) out.push({ id: `bar-${i}`, v: 0.15 + Math.random() * 0.85 });
-    return out;
-  }, []);
+function Waveform({ trigger, heights }: WaveformProps) {
+  const bars = heights.length > 0 ? heights : new Array<number>(30).fill(0);
 
   return (
     <div className="flex items-end gap-1" style={{ height: 96 }}>
-      {bars.map((bar, i) => (
+      {bars.map((v, i) => (
         <div
-          key={bar.id}
+          // biome-ignore lint/suspicious/noArrayIndexKey: bars are positional, index is the only stable key
+          key={`bar-${i}`}
           className="flex-1 transition-all duration-500"
           style={{
-            height: trigger ? `${bar.v * 100}%` : '2%',
+            // 2% floor so zero-activity days still render a faint pip rather
+            // than disappearing entirely.
+            height: trigger ? `${Math.max(2, v * 100)}%` : '2%',
             background: `linear-gradient(to top, ${colors.amber}, ${colors.amberHot})`,
             boxShadow: `0 0 4px ${colors.amber}80`,
             transitionDelay: `${i * 30}ms`,
@@ -202,21 +203,23 @@ function buildHeatmapModel(days: TelemetryHeatmapDay[]): HeatmapGridModel {
 interface YearHeatmapProps {
   /** When true, fade the grid in (opacity 0 → 1). */
   trigger: boolean;
+  /** 365-day activity data with quartile-bucketed levels 0-4. */
+  heatmap: TelemetryHeatmapDay[];
 }
 
 /**
  * GitHub-style 7-row activity heatmap covering the trailing year.
  *
  * @remarks
- * Source data is `telemetryHeatmap` from `@/data/portfolio`, generated
- * upstream by `scripts/fetch-wakatime.mjs`; if WakaTime is unreachable the
- * script writes placeholder data, so this component must tolerate any 0–4
- * level distribution. Layout is precomputed once via {@link buildHeatmapModel}
- * inside `useMemo`. Returns `null` when there are no cells (e.g. before the
- * generated data file exists).
+ * Source data comes from {@link useWakatime}, which fetches WakaTime's public
+ * year-activity share JSON at runtime; the consumer passes the resolved
+ * `heatmap` array down. Layout is precomputed via {@link buildHeatmapModel}
+ * inside `useMemo` and recomputed whenever the underlying data changes (so
+ * the grid pops in when the async fetch resolves). Returns `null` when there
+ * are no cells.
  */
-function YearHeatmap({ trigger }: YearHeatmapProps) {
-  const model = useMemo(() => buildHeatmapModel(telemetryHeatmap), []);
+function YearHeatmap({ trigger, heatmap }: YearHeatmapProps) {
+  const model = useMemo(() => buildHeatmapModel(heatmap), [heatmap]);
 
   if (model.numCols === 0) return null;
 
@@ -307,22 +310,27 @@ function YearHeatmap({ trigger }: YearHeatmapProps) {
 }
 
 /**
- * Section 05 — developer telemetry: language distribution bars, a decorative
+ * Section 05 — developer telemetry: language distribution bars, a 30-day
  * activity waveform with stat tiles, and a year-long contribution heatmap.
  *
  * @remarks
- * All data (`telemetryBars`, `telemetryTiles`, `telemetryHeatmap`,
- * `telemetryYearTiles`) is re-exported from `@/data/portfolio`, which in turn
- * pulls from the gitignored `src/data/wakatime.generated.ts` produced by
- * `scripts/fetch-wakatime.mjs` during `predev`/`prebuild`. Freshness is tied
- * to deploy cadence — there is no runtime fetching. All three sub-visuals
- * ({@link BarRow}, {@link Waveform}, {@link YearHeatmap}) share a single
- * {@link useOnScreen} trigger so they animate in together when the section
- * enters the viewport.
+ * All three sub-visuals share a single {@link useOnScreen} trigger so they
+ * animate in together when the section enters the viewport. Underlying data
+ * is fetched at runtime via {@link useWakatime} from WakaTime's public
+ * share-chart JSON endpoints — no API key, no build-time generation step.
+ * While the fetch is in flight the panels render empty placeholders so the
+ * layout stays stable.
  */
 export function TelemetrySection() {
   const ref = useRef<HTMLElement>(null);
   const onScreen = useOnScreen(ref);
+  const { data } = useWakatime();
+
+  const bars = data?.bars ?? [];
+  const tiles = data?.tiles ?? [];
+  const heatmap = data?.heatmap ?? [];
+  const yearTiles = data?.yearTiles ?? [];
+  const waveform = data?.waveform ?? [];
 
   return (
     <section ref={ref} id="telemetry" className="relative py-20 px-4 md:px-10">
@@ -332,7 +340,7 @@ export function TelemetrySection() {
         <div className="grid md:grid-cols-2 gap-5">
           <Panel label="30-DAY LANGUAGE DISTRIBUTION" meta="VIA WAKATIME">
             <div className="space-y-2.5">
-              {telemetryBars.map((bar, i) => (
+              {bars.map((bar, i) => (
                 <BarRow key={bar.label} bar={bar} delay={i * 100} trigger={onScreen} />
               ))}
             </div>
@@ -350,9 +358,9 @@ export function TelemetrySection() {
           </Panel>
 
           <Panel label="ACTIVITY WAVEFORM" meta="LAST 30 DAYS" variant="amber">
-            <Waveform trigger={onScreen} />
+            <Waveform trigger={onScreen} heights={waveform} />
             <div className="mt-4 grid grid-cols-3 gap-3">
-              {telemetryTiles.map((tile) => (
+              {tiles.map((tile) => (
                 <div key={tile.label} className="p-2 border" style={{ borderColor: colors.line }}>
                   <div
                     className="font-body font-semibold uppercase"
@@ -378,9 +386,9 @@ export function TelemetrySection() {
 
         <div className="mt-5">
           <Panel label="ACTIVITY · LAST YEAR" meta="VIA WAKATIME" variant="cyan">
-            <YearHeatmap trigger={onScreen} />
+            <YearHeatmap trigger={onScreen} heatmap={heatmap} />
             <div className="mt-5 grid grid-cols-3 gap-3">
-              {telemetryYearTiles.map((tile) => (
+              {yearTiles.map((tile) => (
                 <div
                   key={tile.label}
                   className="p-2 border overflow-hidden"

@@ -64,9 +64,9 @@ export interface Project {
  * One bar in the language-distribution chart rendered by `TelemetrySection`.
  *
  * @remarks
- * Produced by `scripts/fetch-wakatime.mjs` from the WakaTime
- * `last_7_days` stats endpoint. The top languages plus an `Other` bucket are
- * emitted so percentages sum to ~100.
+ * Produced at runtime by `useWakatime` from WakaTime's public
+ * language-distribution share JSON. The top languages plus an `Other` bucket
+ * are emitted so percentages sum to ~100.
  */
 export interface TelemetryBar {
   /** Language or category name (e.g. `'TypeScript'`, `'Other'`). */

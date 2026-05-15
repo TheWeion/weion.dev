@@ -18,12 +18,9 @@ npm run format       # biome format --write
 npm run format:check # biome format (no writes)
 npm run check        # biome check (lint + format + import sort)
 npm run check:fix    # biome check --write (the daily driver)
-npm run wakatime     # regenerate src/data/wakatime.generated.ts on demand
 ```
 
 There is no test suite. `npm run build` deliberately runs TypeScript as a project-reference build (`tsc -b`) before Vite, so a type error fails the Netlify build even though Vite itself would transpile through SWC.
-
-`predev` and `prebuild` invoke `scripts/fetch-wakatime.mjs` so the generated telemetry file is always present before tsc/Vite read it.
 
 ## Architecture
 
@@ -64,9 +61,8 @@ If you change the placeholder visual, keep it close to the React-rendered BootSe
 - `src/components/chrome/`, `components/overlays/`, `components/boot/`, `components/text/` — non-reusable layout/FX pieces.
 - `src/components/SceneErrorBoundary.tsx` — class-component error boundary scoped to the lazy `HudScene` mount. Catches WebGL/postprocessing failures (older Intel iGPUs, blocked hardware acceleration, lost context) so they degrade to "no 3D background" rather than unmounting the whole React tree.
 - `src/sections/` — one file per scrollable page section; these compose `hud/` primitives with data from `src/data/portfolio.ts`.
-- `src/hooks/` — `useClock` (live UTC/local time ticker for the chrome), `useOnScreen` (IntersectionObserver), `usePrefersReducedMotion`, `useSignalStrength` (network-quality signal-strength bar driven by `navigator.connection`).
+- `src/hooks/` — `useClock` (live UTC/local time ticker for the chrome), `useOnScreen` (IntersectionObserver), `usePrefersReducedMotion`, `useSignalStrength` (network-quality signal-strength bar driven by `navigator.connection`), `useWakatime` (runtime fetch of WakaTime share-chart JSON, with hex→sci-fi palette mapping).
 - `src/data/portfolio.ts` — single source of truth for all content (operative profile, bio, skills, projects, socials). Edit content here rather than in section components.
-- `src/data/wakatime.generated.ts` — **auto-generated, gitignored**. Produced by `scripts/fetch-wakatime.mjs` on `predev` / `prebuild`; exports `telemetryBars` (top 5 languages + Other), `telemetryTiles` (avg/day, peak, streak), `telemetryHeatmap` (365-day activity grid with quartile-bucketed levels 0-4), and `telemetryYearTiles` (year total, top language, best day). `portfolio.ts` re-exports all four so section code keeps a single import site. Run `npm run wakatime` to regenerate on demand.
 
 ### Design tokens
 
@@ -104,15 +100,12 @@ Netlify, configured in `netlify.toml`:
 
 ### WakaTime integration
 
-- `WAKATIME_API_KEY` (Netlify site env var) drives `scripts/fetch-wakatime.mjs`. With the key present the script hits four endpoints in parallel:
-  - `/users/current/stats/last_7_days` — languages + `daily_average` + `best_day`
-  - `/users/current/summaries?range=last_30_days` — for the consecutive-day streak
-  - `/users/current/stats/last_year` — top language for the year tile
-  - `/users/current/summaries?start=…&end=…` (365-day window) — for the year heatmap and year totals (the `range=last_year` shortcut is rejected by the summaries endpoint, so explicit dates are required)
-- **Fallback behavior**: if anything fails (missing key, malformed key, network/API error, empty response), the script does **not** write fake data. Instead it preserves the existing `wakatime.generated.ts` from the previous deploy, logging the reason. Only when no prior file exists does it write a minimal empty bootstrap so tsc/Vite can still compile.
-- The "preserve existing" path requires the file to survive across deploys. Since it's gitignored, `netlify-plugin-cache` is registered in `netlify.toml` to persist `src/data/wakatime.generated.ts` between builds. On the very first deploy the cache is empty and the script must successfully fetch.
-- Freshness is tied to deploy cadence. The scheduled Netlify function in `netlify/functions/trigger-rebuild.mjs` runs `@daily` and POSTs to the site's build hook (URL stored in the `BUILD_HOOK_URL` Netlify env var) so each deploy regenerates the telemetry. Don't add runtime fetching.
-- The script is deliberately dependency-free — it uses `fetch` built into Node 24 and nothing from `node_modules`. Keep it that way; a stale lockfile shouldn't be able to break telemetry generation.
+- `src/hooks/useWakatime.ts` fetches three public WakaTime share-chart JSON URLs in parallel from the browser on mount of `TelemetrySection`:
+  - Daily-activity (last 30 days) → drives the audio-waveform visualization plus the AVG/DAY, PEAK, and STREAK tiles.
+  - Language distribution (last 30 days) → drives the language bars and the year-panel TOP LANG tile. Recognizable brand colors (HSL saturation ≥ 10%) keep their hue but get clamped into the HUD's "neon accent" S/L range (saturation ≥ 80%, lightness in `[0.50, 0.65]`) via `sciFiTune` — so TypeScript stays blue, JavaScript stays yellow, but both pop against the dark panel like the rest of the cyan/amber/magenta palette. Monochrome languages (JSON's `#292929`, plain-text grays) fall back to a sci-fi token from `@/lib/tokens` by lightness: dark → `bronze`, light → `halo`, mid → `muted`.
+  - Activity (last 365 days) → drives the heatmap (quartile-bucketed levels 0-4) and the TOTAL / BEST DAY tiles.
+- No API key, no `.env`, and no build-time generation step — WakaTime refreshes the share JSON daily on their side, so freshness rides on the user's page visit. CSP `connect-src` includes `wakatime.com` to allow the three browser fetches.
+- On fetch failure the hook surfaces an `error` and leaves `data` `null`; the section renders empty panels rather than fakes. The TelemetrySection layout reserves space for the visualizations so the loading state doesn't shift layout.
 
 ## Code style — Biome
 
@@ -122,7 +115,7 @@ Notable explicit configuration:
 
 - `**/*.css` is excluded — Biome's CSS parser doesn't understand Tailwind v4's `@theme` directive, and the only `noImportantStyles` violations are the intentional `animation: none !important` overrides inside `@media (prefers-reduced-motion)`.
 - `lint/suspicious/noCommentText: off` — the `//` glyph is part of the HUD design language and appears as literal text in section eyebrows (`// OPERATOR PROFILE`, `WEION.DEV //`, etc.); the rule misreads them as stray comments.
-- `assets/`, `dist/`, `.vite/`, and `src/data/wakatime.generated.ts` are excluded from `files.includes`.
+- `assets/`, `dist/`, and `.vite/` are excluded from `files.includes`.
 
 Per-line `// biome-ignore lint/<rule>: <reason>` suppressions exist in three known places — all intentional patterns (R3F stable uniform identity, presentational hover wrapper, heatmap padding cells). Don't remove them without addressing the underlying pattern.
 

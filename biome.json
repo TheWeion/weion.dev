@@ -7,15 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": [
-      "**",
-      "!**/dist",
-      "!**/.vite",
-      "!assets",
-      "!src/data/wakatime.generated.ts",
-      "!package-lock.json",
-      "!**/*.css"
-    ]
+    "includes": ["**", "!**/dist", "!**/.vite", "!assets", "!package-lock.json", "!**/*.css"]
   },
   "formatter": {
     "enabled": true,
