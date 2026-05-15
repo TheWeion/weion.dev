@@ -138,7 +138,8 @@ Never remove this — it's an accessibility requirement, not an aesthetic toggle
 ## Performance notes
 
 ### Critical-path
-- `HudScene` is `React.lazy`'d in `App.tsx`, so the ~335 KiB three+r3f+drei+postprocessing stack ships in its own chunks and stays off the critical path.
+- `HudScene` is `React.lazy`'d in `App.tsx`, so the ~335 KiB three+r3f+drei+postprocessing stack ships in its own chunks and stays off the critical path. The mount is additionally gated behind `booted` so the lazy import doesn't *fire* until after the boot animation finishes — on weak GPUs (Intel UHD 600 in older budget laptops) the ~1.2 MB three+r3f parse otherwise blocked the boot timers and left the terminal stuck empty.
+- `HudScene` is wrapped in `SceneErrorBoundary` so a WebGL/postprocessing failure (older drivers, blocked hardware acceleration, lost context) degrades to a missing 3D background rather than unmounting the rest of the page.
 - `index.html` carries a fixed-position static placeholder inside `#root` mirroring the first BootSequence line, so FCP fires on HTML parse instead of waiting for JS download/parse/execute. React replaces it on mount with the same visual.
 - `<body style="overflow:hidden">` in `index.html` locks scroll until `BootSequence` releases it via its `done` state — covers the placeholder window before React mounts as well as the React-rendered overlay.
 - The app stylesheet is **inlined** into `index.html` at build time by the `inlineAppStylesheet` Vite plugin so there is no render-blocking external CSS request.

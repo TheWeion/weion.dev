@@ -33,7 +33,7 @@ The page is a stack of fixed/absolute layers, not a normal document flow. Z-indi
 
 | z-index   | Layer                                                                      |
 | --------- | -------------------------------------------------------------------------- |
-| `z-0`     | `HudScene` (R3F `<Canvas>`) — `Lights`, `HoloOrb` (Goldberg-polyhedron wireframe shell + holographic core), `AmbientDust`, `GridFloor`, plus a `CameraParallax` helper that eases the camera toward the pointer. Lazy-loaded from `App.tsx` via `React.lazy` + `<Suspense>` so the ~335 KiB three+r3f stack stays off the critical path. |
+| `z-0`     | `HudScene` (R3F `<Canvas>`) — `Lights`, `HoloOrb` (Goldberg-polyhedron wireframe shell + holographic core), `AmbientDust`, `GridFloor`, plus a `CameraParallax` helper that eases the camera toward the pointer. Lazy-loaded from `App.tsx` via `React.lazy` + `<Suspense>` so the ~335 KiB three+r3f stack stays off the critical path. **The mount is also gated by `booted` (`{booted && ...}`)** so three.js doesn't even *start* downloading/parsing until the boot animation finishes — on weak GPUs (Intel UHD 600 etc.) the ~1.2 MB three+r3f parse would otherwise block the boot timers and leave the terminal stuck empty. Wrapped in `SceneErrorBoundary` so a WebGL/postprocessing failure degrades to "no 3D background" instead of unmounting the rest of the app. |
 | `z-[4]`   | Amber color-graded lens (Halo-3-style) — sits over the 3D scene to push contrast down behind white text. |
 | `z-[5]`   | Atmospheric warm/cool radial wash + top/bottom dark gradient.              |
 | `z-10`    | `<main>` — scrolling sections (`Hero`, `Dossier`, `Capabilities`, `Archive`, `Telemetry`, `Eof`). Held at `opacity: 0` until `BootSequence` signals complete. |
@@ -62,6 +62,7 @@ If you change the placeholder visual, keep it close to the React-rendered BootSe
 - `src/scene/` — R3F scene graph children (Three.js / drei). Anything that renders inside `<Canvas>` lives here. Pure utilities used by scene children also live here, e.g. `goldbergGeometry.ts` builds the dual-polyhedron line geometry consumed by `HoloOrb`'s outer hex shell.
 - `src/components/hud/` — reusable HUD primitives (`Panel`, `AngularButton`, `CornerBrackets`, `SectionHeading`, `HologramPortrait`). These apply the angular clip-paths from `src/lib/tokens.ts`.
 - `src/components/chrome/`, `components/overlays/`, `components/boot/`, `components/text/` — non-reusable layout/FX pieces.
+- `src/components/SceneErrorBoundary.tsx` — class-component error boundary scoped to the lazy `HudScene` mount. Catches WebGL/postprocessing failures (older Intel iGPUs, blocked hardware acceleration, lost context) so they degrade to "no 3D background" rather than unmounting the whole React tree.
 - `src/sections/` — one file per scrollable page section; these compose `hud/` primitives with data from `src/data/portfolio.ts`.
 - `src/hooks/` — `useClock` (live UTC/local time ticker for the chrome), `useOnScreen` (IntersectionObserver), `usePrefersReducedMotion`, `useSignalStrength` (network-quality signal-strength bar driven by `navigator.connection`).
 - `src/data/portfolio.ts` — single source of truth for all content (operative profile, bio, skills, projects, socials). Edit content here rather than in section components.

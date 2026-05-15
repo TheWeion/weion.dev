@@ -3,6 +3,7 @@ import { BootSequence } from '@/components/boot/BootSequence';
 import { BottomChrome } from '@/components/chrome/BottomChrome';
 import { TopChrome } from '@/components/chrome/TopChrome';
 import { ScreenOverlays } from '@/components/overlays/ScreenOverlays';
+import { SceneErrorBoundary } from '@/components/SceneErrorBoundary';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { ArchiveSection } from '@/sections/ArchiveSection';
 import { CapabilitiesSection } from '@/sections/CapabilitiesSection';
@@ -13,7 +14,12 @@ import { TelemetrySection } from '@/sections/TelemetrySection';
 
 // The R3F + three bundle is the largest dep on the page (~335 KiB). Splitting
 // it behind React.lazy keeps the WebGL stack off the critical path so first
-// paint of the HUD content doesn't wait on Three's parse/eval cost.
+// paint of the HUD content doesn't wait on Three's parse/eval cost. The
+// `lazy()` import isn't *triggered* until `<HudScene />` is rendered, so the
+// `{booted && ...}` gate below ensures three.js doesn't begin downloading
+// and parsing until the boot animation has finished — this was the original
+// fix for weak-GPU laptops (e.g. Intel UHD 600) where ~1.2 MB of three/r3f
+// parse blocked the boot timers and left the boot terminal stuck empty.
 const HudScene = lazy(() => import('@/scene/HudScene').then((m) => ({ default: m.HudScene })));
 
 /**
@@ -61,11 +67,18 @@ export default function App() {
     <div className="relative min-h-screen overflow-x-hidden bg-void text-ink">
       <BootSequence onComplete={() => setBooted(true)} skip={reducedMotion} />
 
-      {/* Layer 0: 3D background scene */}
+      {/* Layer 0: 3D background scene. Only mounts after boot completes —
+          see the comment on the `HudScene` lazy import above. Wrapped in
+          SceneErrorBoundary so a WebGL failure on weak/old GPUs degrades to
+          "no 3D background" instead of unmounting the rest of the app. */}
       <div className="fixed inset-0 z-0">
-        <Suspense fallback={null}>
-          <HudScene reducedMotion={reducedMotion} />
-        </Suspense>
+        {booted && (
+          <SceneErrorBoundary>
+            <Suspense fallback={null}>
+              <HudScene reducedMotion={reducedMotion} />
+            </Suspense>
+          </SceneErrorBoundary>
+        )}
       </div>
 
       {/* Layer 5+: atmospheric gradients, scanlines, vignette, flicker */}
