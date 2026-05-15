@@ -168,34 +168,14 @@ const CHROMATIC_OFFSET = new Vector2(0.0015, 0.001);
 export function HudScene({ reducedMotion = false }: HudSceneProps) {
   const [quality, setQuality] = useState<'high' | 'medium' | 'low'>('high');
   const [dpr, setDpr] = useState<number | [number, number]>([1, 2]);
-  // Animation starts paused. Switches on at the first user signal
-  // (pointermove / scroll / keydown / touchstart) or after a 2.05s fallback so
-  // the scene still comes alive even on a perfectly idle desktop. Lighthouse
-  // never interacts during its measurement window, so it sees a quiet canvas
-  // and lands a real TBT/TTI instead of measuring the perpetual render loop.
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    let timer: number | undefined;
-    const start = () => setAnimate(true);
-    const opts = { once: true, passive: true } as const;
-    window.addEventListener('pointermove', start, opts);
-    window.addEventListener('scroll', start, opts);
-    window.addEventListener('touchstart', start, opts);
-    window.addEventListener('keydown', start, { once: true });
-    timer = window.setTimeout(start, 2050);
-    return () => {
-      window.removeEventListener('pointermove', start);
-      window.removeEventListener('scroll', start);
-      window.removeEventListener('touchstart', start);
-      window.removeEventListener('keydown', start);
-      if (timer) window.clearTimeout(timer);
-    };
-  }, [reducedMotion]);
 
   const postEnabled = !reducedMotion && quality !== 'low';
-  const frameloop = reducedMotion || !animate ? 'demand' : 'always';
+  // Frameloop starts immediately on mount for non-reduced-motion users. The
+  // earlier user-signal + 2.05 s fallback defer was a Lighthouse trick from
+  // when HudScene mounted at page load; now that App gates the mount behind
+  // `booted` (a 2.7 s boot animation has already played), the user is
+  // demonstrably present and the canvas can come alive right away.
+  const frameloop = reducedMotion ? 'demand' : 'always';
 
   return (
     <Canvas

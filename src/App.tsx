@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BootSequence } from '@/components/boot/BootSequence';
 import { BottomChrome } from '@/components/chrome/BottomChrome';
 import { TopChrome } from '@/components/chrome/TopChrome';
@@ -62,6 +62,22 @@ const HudScene = lazy(() => import('@/scene/HudScene').then((m) => ({ default: m
 export default function App() {
   const reducedMotion = usePrefersReducedMotion();
   const [booted, setBooted] = useState(false);
+
+  // Pre-warm the HudScene chunk so three.js is downloaded *and parsed* by the
+  // time `booted` flips and the lazy mount renders for real — without this,
+  // the user sees the boot end then waits ~500-1500 ms for the chunk before
+  // the scene appears. The delay is timed to match the BootSequence fade
+  // (2000 ms): by then every boot line is on screen and the panel is
+  // visually concluded, so even on weak hardware where parsing briefly
+  // blocks the main thread, the boot animation itself doesn't slip. For
+  // reducedMotion users (boot is skipped) we kick off immediately.
+  useEffect(() => {
+    const delay = reducedMotion ? 0 : 2000;
+    const id = window.setTimeout(() => {
+      void import('@/scene/HudScene');
+    }, delay);
+    return () => window.clearTimeout(id);
+  }, [reducedMotion]);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-void text-ink">

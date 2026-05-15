@@ -139,7 +139,8 @@ Never remove this — it's an accessibility requirement, not an aesthetic toggle
 - Critical webfont woff2 files (`Rajdhani-400`, `Orbitron-700`) are **preloaded** via `<link rel="preload" as="font">` injected by the `preloadCriticalFonts` Vite plugin, so the browser fetches them in parallel with the inlined CSS instead of waiting for CSS parse.
 
 ### Runtime
-- The `<Canvas>` mounts in `frameloop="demand"` and only switches to `"always"` on the first user signal (pointermove / scroll / touchstart / keydown) or after a 2.05 s fallback. Reduced-motion users stay in demand mode permanently.
+- The `<Canvas>` starts `frameloop="always"` immediately on mount for non-reduced-motion users — by then `booted` is true and the user has just watched 2.7 s of boot animation. Reduced-motion users stay in `frameloop="demand"` permanently.
+- `App.tsx` pre-warms the HudScene chunk on a 2 s timer (matching the boot fade) so three.js is downloaded and parsed by the time `booted` flips, eliminating the ~500–1500 ms gap between boot end and the scene appearing. The preload is delayed deliberately so the heavy parse doesn't compete with the first 2 s of boot timers on weak hardware.
 - `<Canvas>` pixel ratio is adaptive: it starts at `[1, 2]` and is stepped down to `[1, 1.5]` (medium) or `1` (low) at runtime by drei's `<PerformanceMonitor>`.
 - All `useFrame` loops mutate refs directly; no `setState` inside the frame loop.
 - Geometry, materials, and textures are created once inside `useMemo` or at module scope.
