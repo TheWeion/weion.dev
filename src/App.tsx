@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { BootSequence } from '@/components/boot/BootSequence';
 import { BottomChrome } from '@/components/chrome/BottomChrome';
 import { TopChrome } from '@/components/chrome/TopChrome';
+import { RippleFilters } from '@/components/overlays/RippleFilters';
 import { ScreenOverlays } from '@/components/overlays/ScreenOverlays';
 import { SceneErrorBoundary } from '@/components/SceneErrorBoundary';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
@@ -81,6 +82,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-void text-ink">
+      <RippleFilters />
       <BootSequence onComplete={() => setBooted(true)} skip={reducedMotion} />
 
       {/* Layer 0: 3D background scene. Only mounts after boot completes —
@@ -102,11 +104,7 @@ export default function App() {
 
       <TopChrome />
 
-      <main
-        className={`relative z-10 transition-opacity duration-1000 ${
-          booted ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
+      <main className={`relative z-10 ${booted ? 'hud-rgb-reveal' : 'opacity-0'}`}>
         <HeroSection />
         <DossierSection />
         <CapabilitiesSection />

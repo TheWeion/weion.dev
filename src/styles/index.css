@@ -233,6 +233,106 @@
     }
   }
 
+  /* Boot-to-content transition. Two animations that run simultaneously when
+     the boot animation completes — the overlay dissolves while <main>
+     resolves, both via pure RGB-channel split (no clip-path slicing, no
+     flipping, no brightness pulses). Effect is "signal lock-in": the
+     chromatic split (magenta/cyan drop-shadow ghosts cast off every opaque
+     pixel inside) starts wide on <main> and *converges* to zero as the
+     content lands, while the boot overlay's split *widens* as its opacity
+     drops — like a tuned signal coming online while the previous channel
+     fades into static. Total: ~600 ms for both. Both keyframe sequences are
+     monotonic on opacity, the chromatic offsets shrink/grow monotonically
+     too, and nothing flashes — WCAG flash-safe by construction. */
+  .hud-rgb-dissolve {
+    animation: hud-rgb-dissolve 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: opacity, filter;
+  }
+  @keyframes hud-rgb-dissolve {
+    0% {
+      opacity: 1;
+      filter: none;
+    }
+    20% {
+      opacity: 0.92;
+      filter: drop-shadow(2px 0 0 var(--color-magenta))
+        drop-shadow(-2px 0 0 var(--color-cyan));
+    }
+    40% {
+      opacity: 0.72;
+      filter: drop-shadow(4px 0 0 var(--color-magenta))
+        drop-shadow(-4px 0 0 var(--color-cyan)) blur(0.5px);
+    }
+    60% {
+      opacity: 0.48;
+      filter: drop-shadow(6px 0 0 var(--color-magenta))
+        drop-shadow(-6px 0 0 var(--color-cyan)) blur(1px);
+    }
+    80% {
+      opacity: 0.22;
+      filter: drop-shadow(8px 0 0 var(--color-magenta))
+        drop-shadow(-8px 0 0 var(--color-cyan)) blur(1.5px);
+    }
+    95% {
+      opacity: 0.04;
+      filter: drop-shadow(10px 0 0 var(--color-magenta))
+        drop-shadow(-10px 0 0 var(--color-cyan)) blur(2px);
+    }
+    100% {
+      opacity: 0;
+      filter: none;
+    }
+  }
+
+  .hud-rgb-reveal {
+    animation: hud-rgb-reveal 700ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: opacity, filter;
+  }
+  @keyframes hud-rgb-reveal {
+    0% {
+      opacity: 0;
+      filter: drop-shadow(10px 0 0 var(--color-magenta))
+        drop-shadow(-10px 0 0 var(--color-cyan)) blur(2px);
+    }
+    18% {
+      opacity: 0.25;
+      filter: drop-shadow(8px 0 0 var(--color-magenta))
+        drop-shadow(-8px 0 0 var(--color-cyan)) blur(1.5px);
+    }
+    36% {
+      opacity: 0.5;
+      filter: drop-shadow(6px 0 0 var(--color-magenta))
+        drop-shadow(-6px 0 0 var(--color-cyan)) blur(1px);
+    }
+    54% {
+      opacity: 0.72;
+      filter: drop-shadow(4px 0 0 var(--color-magenta))
+        drop-shadow(-4px 0 0 var(--color-cyan)) blur(0.5px);
+    }
+    72% {
+      opacity: 0.92;
+      filter: drop-shadow(2px 0 0 var(--color-magenta))
+        drop-shadow(-2px 0 0 var(--color-cyan));
+    }
+    /* Ripple cap — once the chromatic split has converged the content rides
+       a brief feTurbulence/feDisplacementMap distortion (strong → soft) for
+       ~140 ms before snapping to clean. The filter swap from drop-shadow to
+       url() isn't interpolatable, so each ripple frame holds discretely —
+       reads as a settling water-ripple, not a smooth blur. */
+    80% {
+      opacity: 1;
+      filter: url(#hud-ripple-strong);
+    }
+    90% {
+      opacity: 1;
+      filter: url(#hud-ripple-soft);
+    }
+    100% {
+      opacity: 1;
+      filter: none;
+    }
+  }
+
   /* Infinite horizontal marquee for skill tickers. */
   .hud-marquee {
     animation: hud-marquee 55s linear infinite;
@@ -273,5 +373,17 @@
   .hud-glitch-text::before,
   .hud-glitch-text::after {
     animation: none !important;
+  }
+  /* Reduce-motion users skip BootSequence entirely (see App.tsx), so the
+     boot dissolve never plays — but the content reveal could trigger if
+     booted flips to true some other way. Fall back to instant reveal so
+     reduced-motion users see the page immediately. */
+  .hud-rgb-dissolve,
+  .hud-rgb-reveal {
+    animation: none !important;
+    filter: none !important;
+  }
+  .hud-rgb-reveal {
+    opacity: 1 !important;
   }
 }

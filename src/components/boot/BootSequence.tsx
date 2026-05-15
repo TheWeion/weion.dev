@@ -42,11 +42,15 @@ interface BootLine {
  * scrolling sections — `App` keeps `<main>` at `opacity: 0` until
  * {@link BootSequenceProps.onComplete} fires.
  *
- * Lines are revealed on independent timers (~350ms apart), the overlay starts
- * fading at 2000ms, and `onComplete` fires at 2700ms (after the 700ms opacity
- * transition completes). All timers are cleared on unmount. When `skip` is
- * true the entire animation is bypassed and the callback fires immediately,
- * which is how reduced-motion users land directly on the HUD.
+ * Lines are revealed on independent timers (~350ms apart). At 2000ms the
+ * overlay begins its `hud-boot-glitch-out` keyframe animation and
+ * `onComplete` fires *at the same instant*, so `<main>` can start its
+ * `hud-content-glitch-in` in parallel — the boot tears apart while the page
+ * reassembles, no sequential fade-out-then-fade-in seam. The `done` flag
+ * (which releases the body scroll lock) flips at 2650ms once the 600ms
+ * glitch animation has settled. All timers are cleared on unmount. When
+ * `skip` is true the entire animation is bypassed and the callback fires
+ * immediately, which is how reduced-motion users land directly on the HUD.
  *
  * @example
  * ```tsx
@@ -82,11 +86,18 @@ export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
     const revealTimers = lines.map((line) =>
       window.setTimeout(() => setVisible((current) => [...current, line]), line.delay),
     );
-    const fadeTimer = window.setTimeout(() => setFading(true), 2000);
-    const completeTimer = window.setTimeout(() => {
-      setDone(true);
+    // Fire onComplete at the same instant we start glitching out — this lets
+    // <main> begin its glitch-in animation in parallel, so the boot overlay
+    // is tearing apart while the page is reassembling for a continuous
+    // hand-off (no sequential fade-out-then-fade-in seam).
+    const fadeTimer = window.setTimeout(() => {
+      setFading(true);
       onComplete();
-    }, 2700);
+    }, 2000);
+    // After both transition keyframes settle (boot dissolve 600 ms, content
+    // reveal 700 ms — both started at 2000 ms), mark the overlay done so the
+    // body scroll lock releases.
+    const completeTimer = window.setTimeout(() => setDone(true), 2750);
 
     return () => {
       for (const id of revealTimers) window.clearTimeout(id);
@@ -111,8 +122,8 @@ export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-700 ${
-        fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      className={`fixed inset-0 z-[100] flex items-center justify-center ${
+        fading ? 'hud-rgb-dissolve pointer-events-none' : ''
       }`}
       style={{ background: colors.void }}
       aria-hidden={fading}
