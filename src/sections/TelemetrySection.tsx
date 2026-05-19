@@ -321,16 +321,61 @@ function YearHeatmap({ trigger, heatmap }: YearHeatmapProps) {
  * While the fetch is in flight the panels render empty placeholders so the
  * layout stays stable.
  */
+/** Drives the panel footer text + accent color for each {@link useWakatime} state. */
+type TelemetryStatus = 'loading' | 'error' | 'live';
+
+/**
+ * Footer status line shared by all three telemetry panels. Replaces the
+ * previous static "LIVE FEED · UPDATED DAILY" copy so an in-flight or failed
+ * WakaTime fetch surfaces something readable instead of leaving the user
+ * staring at empty panels.
+ */
+function StatusLine({ status }: { status: TelemetryStatus }) {
+  const { color, text } = (() => {
+    switch (status) {
+      case 'loading':
+        return { color: colors.amber, text: 'FETCHING TELEMETRY ...' };
+      case 'error':
+        return { color: colors.alarm, text: 'LINK SEVERED · DATA UNAVAILABLE' };
+      case 'live':
+        return { color: colors.amber, text: 'LIVE FEED · UPDATED DAILY' };
+    }
+  })();
+
+  return (
+    <div
+      className="mt-5 pt-4 border-t font-mono-tech flex items-center gap-2"
+      style={{
+        borderColor: colors.line,
+        color: colors.muted,
+        fontSize: 10,
+        letterSpacing: '0.1em',
+      }}
+    >
+      <span
+        aria-hidden
+        className={`inline-block w-1.5 h-1.5 ${status === 'loading' ? 'animate-pulse' : ''}`}
+        style={{ background: color }}
+      />
+      <span style={{ color }}>STREAM STATUS</span>
+      <span>·</span>
+      <span style={{ color: status === 'error' ? colors.alarm : colors.muted }}>{text}</span>
+    </div>
+  );
+}
+
 export function TelemetrySection() {
   const ref = useRef<HTMLElement>(null);
   const onScreen = useOnScreen(ref);
-  const { data } = useWakatime();
+  const { data, loading, error } = useWakatime();
 
   const bars = data?.bars ?? [];
   const tiles = data?.tiles ?? [];
   const heatmap = data?.heatmap ?? [];
   const yearTiles = data?.yearTiles ?? [];
   const waveform = data?.waveform ?? [];
+
+  const status: TelemetryStatus = loading ? 'loading' : error || !data ? 'error' : 'live';
 
   return (
     <section ref={ref} id="telemetry" className="relative py-20 px-4 md:px-10">
@@ -344,17 +389,7 @@ export function TelemetrySection() {
                 <BarRow key={bar.label} bar={bar} delay={i * 100} trigger={onScreen} />
               ))}
             </div>
-            <div
-              className="mt-5 pt-4 border-t font-mono-tech"
-              style={{
-                borderColor: colors.line,
-                color: colors.muted,
-                fontSize: 10,
-                letterSpacing: '0.1em',
-              }}
-            >
-              <span style={{ color: colors.amber }}>STREAM STATUS</span> · LIVE FEED · UPDATED DAILY
-            </div>
+            <StatusLine status={status} />
           </Panel>
 
           <Panel label="ACTIVITY WAVEFORM" meta="LAST 30 DAYS" variant="amber">
@@ -381,6 +416,7 @@ export function TelemetrySection() {
                 </div>
               ))}
             </div>
+            <StatusLine status={status} />
           </Panel>
         </div>
 
@@ -419,6 +455,7 @@ export function TelemetrySection() {
                 </div>
               ))}
             </div>
+            <StatusLine status={status} />
           </Panel>
         </div>
       </div>

@@ -3,12 +3,19 @@ import { colors } from '@/lib/tokens';
 import type { TelemetryBar, TelemetryHeatmapDay } from '@/types';
 
 /**
- * Public WakaTime "shared chart" JSON endpoints — refreshed on WakaTime's side daily
+ * WakaTime share-chart JSON endpoints, proxied through this site's own origin.
+ *
+ * In production the requests are served by a Netlify Edge Function
+ * (`netlify/edge-functions/wakatime.ts`) that fetches the upstream JSON and
+ * rewrites its `no-store` headers so the Netlify CDN can cache the response
+ * for ~24 h. In dev, Vite's `server.proxy` config forwards the same paths
+ * directly to `wakatime.com`. WakaTime's own server is slow (~10-50 s TTFB);
+ * the edge cache is what makes steady-state page loads instant.
  */
 const SHARE = {
-  waveform: 'https://wakatime.com/share/@Weion/6b858290-31aa-4626-9973-44e3fe47826b.json',
-  languages: 'https://wakatime.com/share/@Weion/5af1726d-42dd-428f-b84c-4d5fe825002e.json',
-  year: 'https://wakatime.com/share/@Weion/e7721aa6-b409-4e94-8c7f-43271fe0a81e.json',
+  waveform: '/api/wakatime/share/@Weion/6b858290-31aa-4626-9973-44e3fe47826b.json',
+  languages: '/api/wakatime/share/@Weion/5af1726d-42dd-428f-b84c-4d5fe825002e.json',
+  year: '/api/wakatime/share/@Weion/e7721aa6-b409-4e94-8c7f-43271fe0a81e.json',
 } as const;
 
 /** Raw shape of the 30-day daily-activity share JSON. */

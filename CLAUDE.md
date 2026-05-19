@@ -102,12 +102,14 @@ Netlify, configured in `netlify.toml`:
 
 ### WakaTime integration
 
-- `src/hooks/useWakatime.ts` fetches three public WakaTime share-chart JSON URLs in parallel from the browser on mount of `TelemetrySection`:
+- `src/hooks/useWakatime.ts` fetches three WakaTime share-chart JSON paths in parallel on mount of `TelemetrySection`, via the same-origin proxy at `/api/wakatime/share/@Weion/<uuid>.json`:
   - Daily-activity (last 30 days) → drives the audio-waveform visualization plus the AVG/DAY, PEAK, and STREAK tiles.
   - Language distribution (last 30 days) → drives the language bars and the year-panel TOP LANG tile. Recognizable brand colors (HSL saturation ≥ 10%) keep their hue but get clamped into the HUD's "neon accent" S/L range (saturation ≥ 80%, lightness in `[0.50, 0.65]`) via `sciFiTune` — so TypeScript stays blue, JavaScript stays yellow, but both pop against the dark panel like the rest of the cyan/amber/magenta palette. Monochrome languages (JSON's `#292929`, plain-text grays) fall back to a sci-fi token from `@/lib/tokens` by lightness: dark → `bronze`, light → `halo`, mid → `muted`.
   - Activity (last 365 days) → drives the heatmap (quartile-bucketed levels 0-4) and the TOTAL / BEST DAY tiles.
-- No API key, no `.env`, and no build-time generation step — WakaTime refreshes the share JSON daily on their side, so freshness rides on the user's page visit. CSP `connect-src` includes `wakatime.com` to allow the three browser fetches.
-- On fetch failure the hook surfaces an `error` and leaves `data` `null`; the section renders empty panels rather than fakes. The TelemetrySection layout reserves space for the visualizations so the loading state doesn't shift layout.
+- `/api/wakatime/*` is fronted in production by a Netlify Edge Function at `netlify/edge-functions/wakatime.ts`. WakaTime's own response is dynamically generated and slow (~10-50 s TTFB) and returns `Cache-Control: no-cache, no-store`, which would otherwise make every cold visit re-pay the full latency. The edge function whitelists `/share/*` paths, fetches the upstream JSON, and replaces its cache headers with `Cache-Control: public, max-age=3600` + `Netlify-CDN-Cache-Control: public, durable, s-maxage=86400` so the Netlify edge serves subsequent requests in ~50 ms and the cache survives deploys (`durable`). The first visit per 24-h window warms the cache; everyone else is instant.
+- In dev, Vite's `server.proxy` forwards `/api/wakatime/*` straight to `wakatime.com` so the hook's relative URLs work without an env branch. There's no caching layer in dev, so each `yarn dev` page load still pays WakaTime's full latency once.
+- No API key, no `.env`, no build-time generation step. CSP `connect-src` no longer needs to allow `wakatime.com` — all fetches now go through the same-origin proxy.
+- The hook surfaces `loading` and `error` alongside `data`; `TelemetrySection`'s `StatusLine` shows "FETCHING TELEMETRY ..." while in flight and "LINK SEVERED · DATA UNAVAILABLE" on failure so cold-cache loads and outages are obvious instead of rendering as silent empty panels. Layout reserves space for the visualizations so state transitions don't shift content.
 
 ## Code style — Biome
 

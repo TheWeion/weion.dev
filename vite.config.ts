@@ -97,5 +97,17 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    // The /api/wakatime proxy is fronted by a Netlify Edge Function in
+    // production (see netlify/edge-functions/wakatime.ts). In dev we forward
+    // the same paths directly to wakatime.com so `useWakatime` doesn't need
+    // to branch on env. No caching here — dev pays the full WakaTime
+    // latency every load.
+    proxy: {
+      '/api/wakatime': {
+        target: 'https://wakatime.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/wakatime/, ''),
+      },
+    },
   },
 });
