@@ -12,6 +12,12 @@ import '@fontsource/rajdhani/latin-700.css';
 import '@fontsource/share-tech-mono/latin-400.css';
 import '@/styles/index.css';
 
+// Refreshes should land at the top of the page.
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+window.scrollTo(0, 0);
+
 // React DOM entry point. The `#root` lookup is intentionally fail-fast: if the
 // element is missing, the app cannot mount and a thrown error surfaces sooner
 // than a silent render-to-nothing.
