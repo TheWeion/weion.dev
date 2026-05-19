@@ -177,11 +177,50 @@ function pickBarColor(hex: string): string {
   return colors.muted;
 }
 
-function fmtHM(totalSeconds: number): string {
+/**
+ * Format a duration (in seconds) into a sci-fi-tile-friendly two-part string,
+ * tiered so the value stays short and legible whatever the magnitude.
+ *
+ * @remarks
+ * - `< 24 h`  → `${h}h ${mm}m` (e.g. `6h 42m`) — original behavior
+ * - `< 7 d`   → `${d}d ${hh}h` (e.g. `3d 04h`)
+ * - `≥ 7 d`   → `${w}w ${d}d`  (e.g. `12w 4d`)
+ *
+ * Used by AVG/DAY, PEAK, and TOTAL tiles. AVG/DAY and PEAK rarely tip past
+ * 24 h in practice, but TOTAL (yearly) routinely runs into hundreds of hours,
+ * which read terribly as `768h 12m` — the day / week tiers keep it compact.
+ *
+ * Negative or NaN inputs are floored to zero so a fetch glitch can't render
+ * a value like `-1h NaNm`.
+ */
+function formatDuration(totalSeconds: number): string {
   const secs = Math.max(0, Math.round(totalSeconds || 0));
-  const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
-  return `${h}h ${String(m).padStart(2, '0')}m`;
+  if (secs < 86400) {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    return `${h}h ${String(m).padStart(2, '0')}m`;
+  }
+  if (secs < 7 * 86400) {
+    const d = Math.floor(secs / 86400);
+    const h = Math.floor((secs % 86400) / 3600);
+    return `${d}d ${String(h).padStart(2, '0')}h`;
+  }
+  const w = Math.floor(secs / (7 * 86400));
+  const d = Math.floor((secs % (7 * 86400)) / 86400);
+  return `${w}w ${d}d`;
+}
+
+/**
+ * Format the STREAK tile value. Tiers up the same way as {@link formatDuration}
+ * once a week is reached so long streaks stay readable — `42 days` becomes
+ * `6w 0d`, `100 days` becomes `14w 2d`.
+ */
+function formatStreak(days: number): string {
+  const n = Math.max(0, Math.floor(days || 0));
+  if (n < 7) return `${n} day${n === 1 ? '' : 's'}`;
+  const w = Math.floor(n / 7);
+  const d = n % 7;
+  return `${w}w ${d}d`;
 }
 
 function formatBestDay(iso: string): string {
@@ -259,9 +298,9 @@ function buildWaveformAndTiles(data: WaveformJson['data']) {
   }
 
   const tiles: TelemetryTile[] = [
-    { label: 'AVG/DAY', value: fmtHM(avg), color: colors.amber },
-    { label: 'PEAK', value: fmtHM(peak), color: colors.cyan },
-    { label: 'STREAK', value: `${streak} day${streak === 1 ? '' : 's'}`, color: colors.ok },
+    { label: 'AVG/DAY', value: formatDuration(avg), color: colors.amber },
+    { label: 'PEAK', value: formatDuration(peak), color: colors.cyan },
+    { label: 'STREAK', value: formatStreak(streak), color: colors.ok },
   ];
 
   return { tiles, waveform };
@@ -309,7 +348,7 @@ function buildHeatmapAndYearTiles(days: YearJson['days'], topLang: string) {
   }
 
   const yearTiles: TelemetryTile[] = [
-    { label: 'TOTAL', value: fmtHM(totalSecs), color: colors.cyan },
+    { label: 'TOTAL', value: formatDuration(totalSecs), color: colors.cyan },
     { label: 'TOP LANG', value: topLang || '—', color: colors.amber },
     { label: 'BEST DAY', value: formatBestDay(bestDate), color: colors.ok },
   ];
