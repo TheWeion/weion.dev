@@ -347,6 +347,63 @@
     }
   }
 
+  /* Telemetry skeleton effects. While `useWakatime` is in flight,
+     `TelemetrySection` renders placeholder bars / waveform / heatmap so
+     the user sees structure rather than empty panels. Two reusable layers:
+
+     - `.hud-skeleton-sweep` paints a cyan scan-sweep gradient over its own
+       contents via an absolutely-positioned `::after`, so the gradient
+       rides on top of whatever the skeleton renders (placeholder bars,
+       heatmap cells, etc.) without disturbing layout. The host element
+       becomes a positioning ancestor with `overflow: hidden` so the
+       gradient can be drawn off-screen and translated through.
+     - `.hud-skeleton-pulse` is an opacity heartbeat — applied to value
+       blocks inside the stat tiles and the bar labels / percentages,
+       which don't carry their own structure to animate. */
+  .hud-skeleton-sweep {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hud-skeleton-sweep::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(3, 216, 243, 0.42) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+    animation: hud-skeleton-sweep 1.8s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+  @keyframes hud-skeleton-sweep {
+    0% {
+      transform: translateX(-120%);
+    }
+    100% {
+      transform: translateX(120%);
+    }
+  }
+
+  .hud-skeleton-pulse {
+    animation: hud-skeleton-pulse 1.6s ease-in-out infinite;
+    will-change: opacity;
+  }
+  @keyframes hud-skeleton-pulse {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.75;
+    }
+  }
+
   .font-display {
     font-family: var(--font-display);
   }
@@ -367,8 +424,16 @@
   .hud-radar-rotate,
   .hud-radar-sweep,
   .hud-crt-scanlines,
-  .hud-crt-sweep {
+  .hud-crt-sweep,
+  .hud-skeleton-pulse {
     animation: none !important;
+  }
+  .hud-skeleton-pulse {
+    opacity: 0.6 !important;
+  }
+  .hud-skeleton-sweep::after {
+    animation: none !important;
+    display: none !important;
   }
   .hud-glitch-text::before,
   .hud-glitch-text::after {

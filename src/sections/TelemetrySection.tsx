@@ -325,6 +325,180 @@ function YearHeatmap({ trigger, heatmap }: YearHeatmapProps) {
 type TelemetryStatus = 'loading' | 'error' | 'live';
 
 /**
+ * Static fill widths for the language-bars skeleton — deterministic so the
+ * placeholder doesn't churn on re-render. Chosen to look like a plausible top
+ * 5 + Other distribution rather than uniform stripes.
+ */
+const LANG_SKELETON_WIDTHS = [62, 44, 28, 18, 12] as const;
+
+/**
+ * 30 deterministic bar heights (0-1) for the waveform skeleton. Shaped like a
+ * working-week cadence — peaks mid-week, dips on weekends — so the placeholder
+ * reads as "telemetry incoming" rather than random noise.
+ */
+const WAVEFORM_SKELETON_HEIGHTS = [
+  0.22, 0.18, 0.34, 0.48, 0.62, 0.45, 0.28, 0.2, 0.36, 0.5, 0.7, 0.78, 0.66, 0.42, 0.24, 0.18, 0.32,
+  0.5, 0.72, 0.84, 0.6, 0.4, 0.22, 0.16, 0.3, 0.46, 0.64, 0.56, 0.38, 0.26,
+] as const;
+
+/** Skeleton column count for the year heatmap (52 weeks fits the trailing year). */
+const HEATMAP_SKELETON_COLS = 52;
+
+/**
+ * Loading placeholder for the language-distribution bars. Renders 5 bars at
+ * deterministic widths with a horizontal scan-sweep over the row container.
+ * The label and percent placeholders pulse independently so the row reads
+ * busy even before the sweep arrives.
+ */
+function LanguageBarsSkeleton() {
+  return (
+    <div className="space-y-2.5">
+      {LANG_SKELETON_WIDTHS.map((w, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: positional placeholder rows have no identity
+        <div key={`lang-skel-${i}`}>
+          <div
+            className="flex items-center justify-between mb-1"
+            style={{ fontSize: 10, letterSpacing: '0.2em' }}
+          >
+            <span
+              className="hud-skeleton-pulse"
+              style={{
+                display: 'inline-block',
+                width: 88,
+                height: 8,
+                background: colors.line,
+              }}
+            />
+            <span
+              className="hud-skeleton-pulse"
+              style={{
+                display: 'inline-block',
+                width: 32,
+                height: 8,
+                background: colors.line,
+              }}
+            />
+          </div>
+          <div
+            className="relative hud-skeleton-sweep"
+            style={{
+              height: 6,
+              background: 'rgba(11,30,46,0.8)',
+              border: `1px solid ${colors.line}`,
+            }}
+          >
+            <div
+              style={{
+                width: `${w}%`,
+                height: '100%',
+                background: `linear-gradient(to right, ${colors.line}, rgba(30, 58, 82, 0.25))`,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Loading placeholder for the 30-day activity waveform. Identical container
+ * dimensions to {@link Waveform} so the panel doesn't reflow when data
+ * resolves; bars are pre-shaped to look like plausible activity and the whole
+ * row carries a cyan scan-sweep overlay.
+ */
+function WaveformSkeleton() {
+  return (
+    <div className="relative hud-skeleton-sweep" style={{ height: 96 }}>
+      <div className="flex items-end gap-1" style={{ height: '100%' }}>
+        {WAVEFORM_SKELETON_HEIGHTS.map((h, i) => (
+          <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: positional bars have no identity
+            key={`wave-skel-${i}`}
+            className="flex-1 hud-skeleton-pulse"
+            style={{
+              height: `${Math.max(8, h * 100)}%`,
+              background: `linear-gradient(to top, ${colors.line}, rgba(30, 58, 82, 0.35))`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Loading placeholder for the year heatmap. Renders the full 7 × 52 grid in
+ * the level-0 muted color with a single cyan scan-sweep across the surface
+ * (reads as a radar pass over an empty grid). Layout matches
+ * {@link YearHeatmap} so the panel height is stable through the transition.
+ */
+function YearHeatmapSkeleton() {
+  const cells = HEATMAP_SKELETON_COLS * 7;
+  return (
+    <div>
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: HEATMAP_SKELETON_COLS * 12 }}>
+          {/* Reserve the month-label row's height so the grid sits where
+              the real heatmap will. */}
+          <div style={{ height: 14, marginBottom: 4 }} />
+          <div
+            className="relative hud-skeleton-sweep"
+            style={{
+              display: 'grid',
+              gridTemplateRows: 'repeat(7, minmax(0, 1fr))',
+              gridAutoFlow: 'column',
+              gridTemplateColumns: `repeat(${HEATMAP_SKELETON_COLS}, minmax(0, 1fr))`,
+              gap: 2,
+            }}
+          >
+            {Array.from({ length: cells }).map((_, i) => (
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: positional cells have no identity
+                key={`heat-skel-${i}`}
+                style={{
+                  aspectRatio: '1 / 1',
+                  background: HEATMAP_LEVEL_COLORS[0],
+                  border: `1px solid ${colors.line}`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* Mirror the LESS/MORE legend row's height so opacity transitions don't shift content. */}
+      <div className="mt-3" style={{ height: 14 }} />
+    </div>
+  );
+}
+
+/**
+ * Loading placeholders for a row of stat tiles. Keeps each tile's label
+ * visible (so the user sees what's loading) and replaces the value with a
+ * pulsing block so the row reads as "data inbound".
+ */
+function StatTilesSkeleton({ labels }: { labels: readonly string[] }) {
+  return (
+    <>
+      {labels.map((label) => (
+        <div key={label} className="p-2 border" style={{ borderColor: colors.line }}>
+          <div
+            className="font-body font-semibold uppercase"
+            style={{ color: colors.muted, fontSize: 9, letterSpacing: '0.25em' }}
+          >
+            {label}
+          </div>
+          <div
+            className="mt-0.5 hud-skeleton-pulse"
+            style={{ width: '70%', height: 14, background: colors.line }}
+          />
+        </div>
+      ))}
+    </>
+  );
+}
+
+/**
  * Footer status line shared by all three telemetry panels. Replaces the
  * previous static "LIVE FEED · UPDATED DAILY" copy so an in-flight or failed
  * WakaTime fetch surfaces something readable instead of leaving the user
@@ -384,37 +558,49 @@ export function TelemetrySection() {
 
         <div className="grid md:grid-cols-2 gap-5">
           <Panel label="30-DAY LANGUAGE DISTRIBUTION" meta="VIA WAKATIME">
-            <div className="space-y-2.5">
-              {bars.map((bar, i) => (
-                <BarRow key={bar.label} bar={bar} delay={i * 100} trigger={onScreen} />
-              ))}
-            </div>
+            {status === 'loading' ? (
+              <LanguageBarsSkeleton />
+            ) : (
+              <div className="space-y-2.5">
+                {bars.map((bar, i) => (
+                  <BarRow key={bar.label} bar={bar} delay={i * 100} trigger={onScreen} />
+                ))}
+              </div>
+            )}
             <StatusLine status={status} />
           </Panel>
 
           <Panel label="ACTIVITY WAVEFORM" meta="LAST 30 DAYS" variant="amber">
-            <Waveform trigger={onScreen} heights={waveform} />
+            {status === 'loading' ? (
+              <WaveformSkeleton />
+            ) : (
+              <Waveform trigger={onScreen} heights={waveform} />
+            )}
             <div className="mt-4 grid grid-cols-3 gap-3">
-              {tiles.map((tile) => (
-                <div key={tile.label} className="p-2 border" style={{ borderColor: colors.line }}>
-                  <div
-                    className="font-body font-semibold uppercase"
-                    style={{
-                      color: tile.color,
-                      fontSize: 9,
-                      letterSpacing: '0.25em',
-                    }}
-                  >
-                    {tile.label}
+              {status === 'loading' ? (
+                <StatTilesSkeleton labels={['AVG/DAY', 'PEAK', 'STREAK']} />
+              ) : (
+                tiles.map((tile) => (
+                  <div key={tile.label} className="p-2 border" style={{ borderColor: colors.line }}>
+                    <div
+                      className="font-body font-semibold uppercase"
+                      style={{
+                        color: tile.color,
+                        fontSize: 9,
+                        letterSpacing: '0.25em',
+                      }}
+                    >
+                      {tile.label}
+                    </div>
+                    <div
+                      className="font-display mt-0.5"
+                      style={{ color: colors.bright, fontSize: 14 }}
+                    >
+                      {tile.value}
+                    </div>
                   </div>
-                  <div
-                    className="font-display mt-0.5"
-                    style={{ color: colors.bright, fontSize: 14 }}
-                  >
-                    {tile.value}
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             <StatusLine status={status} />
           </Panel>
@@ -422,38 +608,46 @@ export function TelemetrySection() {
 
         <div className="mt-5">
           <Panel label="ACTIVITY · LAST YEAR" meta="VIA WAKATIME" variant="cyan">
-            <YearHeatmap trigger={onScreen} heatmap={heatmap} />
+            {status === 'loading' ? (
+              <YearHeatmapSkeleton />
+            ) : (
+              <YearHeatmap trigger={onScreen} heatmap={heatmap} />
+            )}
             <div className="mt-5 grid grid-cols-3 gap-3">
-              {yearTiles.map((tile) => (
-                <div
-                  key={tile.label}
-                  className="p-2 border overflow-hidden"
-                  style={{ borderColor: colors.line, minWidth: 0 }}
-                >
+              {status === 'loading' ? (
+                <StatTilesSkeleton labels={['TOTAL', 'TOP LANG', 'BEST DAY']} />
+              ) : (
+                yearTiles.map((tile) => (
                   <div
-                    className="font-body font-semibold uppercase"
-                    style={{
-                      color: tile.color,
-                      fontSize: 9,
-                      letterSpacing: '0.25em',
-                    }}
+                    key={tile.label}
+                    className="p-2 border overflow-hidden"
+                    style={{ borderColor: colors.line, minWidth: 0 }}
                   >
-                    {tile.label}
+                    <div
+                      className="font-body font-semibold uppercase"
+                      style={{
+                        color: tile.color,
+                        fontSize: 9,
+                        letterSpacing: '0.25em',
+                      }}
+                    >
+                      {tile.label}
+                    </div>
+                    <div
+                      className="font-display mt-0.5"
+                      style={{
+                        color: colors.bright,
+                        // Scales 10→14px with viewport so longer values like
+                        // "JavaScript" fit in the ~70px mobile tile.
+                        fontSize: 'clamp(10px, 3.2vw, 14px)',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {tile.value}
+                    </div>
                   </div>
-                  <div
-                    className="font-display mt-0.5"
-                    style={{
-                      color: colors.bright,
-                      // Scales 10→14px with viewport so longer values like
-                      // "JavaScript" fit in the ~70px mobile tile.
-                      fontSize: 'clamp(10px, 3.2vw, 14px)',
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {tile.value}
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             <StatusLine status={status} />
           </Panel>
