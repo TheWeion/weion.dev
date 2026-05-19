@@ -225,7 +225,7 @@ function YearHeatmap({ trigger, heatmap }: YearHeatmapProps) {
 
   return (
     <div className="transition-opacity duration-700" style={{ opacity: trigger ? 1 : 0 }}>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto md:overflow-x-visible">
         <div style={{ minWidth: model.numCols * 12 }}>
           <div
             className="relative"
@@ -437,7 +437,8 @@ function YearHeatmapSkeleton() {
   const cells = HEATMAP_SKELETON_COLS * 7;
   return (
     <div>
-      <div className="overflow-x-auto">
+      {/* Matches the real heatmap's overflow behavior — see YearHeatmap. */}
+      <div className="overflow-x-auto md:overflow-x-visible">
         <div style={{ minWidth: HEATMAP_SKELETON_COLS * 12 }}>
           {/* Reserve the month-label row's height so the grid sits where
               the real heatmap will. */}
