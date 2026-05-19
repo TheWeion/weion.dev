@@ -97,7 +97,7 @@ function Waveform({ trigger, heights }: WaveformProps) {
   const bars = heights.length > 0 ? heights : new Array<number>(30).fill(0);
 
   return (
-    <div className="flex items-end gap-1" style={{ height: 96 }}>
+    <div className="flex items-end gap-1" style={{ height: 160 }}>
       {bars.map((v, i) => (
         <div
           // biome-ignore lint/suspicious/noArrayIndexKey: bars are positional, index is the only stable key
@@ -352,7 +352,7 @@ const HEATMAP_SKELETON_COLS = 52;
  */
 function LanguageBarsSkeleton() {
   return (
-    <div className="space-y-2.5">
+    <div className="flex flex-col justify-between" style={{ height: 224 }}>
       {LANG_SKELETON_WIDTHS.map((w, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: positional placeholder rows have no identity
         <div key={`lang-skel-${i}`}>
@@ -409,7 +409,7 @@ function LanguageBarsSkeleton() {
  */
 function WaveformSkeleton() {
   return (
-    <div className="relative hud-skeleton-sweep" style={{ height: 96 }}>
+    <div className="relative hud-skeleton-sweep" style={{ height: 160 }}>
       <div className="flex items-end gap-1" style={{ height: '100%' }}>
         {WAVEFORM_SKELETON_HEIGHTS.map((h, i) => (
           <div
@@ -562,7 +562,7 @@ export function TelemetrySection() {
             {status === 'loading' ? (
               <LanguageBarsSkeleton />
             ) : (
-              <div className="space-y-2.5">
+              <div className="flex flex-col justify-between" style={{ height: 224 }}>
                 {bars.map((bar, i) => (
                   <BarRow key={bar.label} bar={bar} delay={i * 100} trigger={onScreen} />
                 ))}
