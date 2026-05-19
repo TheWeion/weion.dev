@@ -35,3 +35,12 @@ Thumbs.db
 
 # Performance
 .unlighthouse
+
+# Yarn Berry (node-modules linker)
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

@@ -24,17 +24,19 @@ Personal portfolio site for Terry Fallows. A single-page application built on **
 Node 24 is pinned in `.nvmrc` (and in `netlify.toml` for production builds). The dev/build scripts run on any Node ≥ 20, but use `nvm use` to match the deploy environment exactly.
 
 ```bash
-npm install
-npm run dev          # http://localhost:5173 (host: true — accessible on LAN)
-npm run typecheck    # strict TS check, no emit
-npm run build        # production bundle to ./dist
-npm run preview      # serve ./dist locally
+yarn install
+yarn dev           # http://localhost:5173 (host: true — accessible on LAN)
+yarn typecheck     # strict TS check, no emit
+yarn build         # production bundle to ./dist
+yarn preview       # serve ./dist locally
 
-npm run check        # Biome lint + format + import sort (read-only)
-npm run check:fix    # same, with safe auto-fixes applied
-npm run format       # format only (writes)
-npm run lint         # lint only
+yarn check         # Biome lint + format + import sort (read-only)
+yarn check:fix     # same, with safe auto-fixes applied
+yarn format        # format only (writes)
+yarn lint          # lint only
 ```
+
+The Yarn 4 runner binary is committed at `.yarn/releases/yarn-4.14.1.cjs` and selected by `yarnPath` in `.yarnrc.yml`, so a fresh clone works without needing Corepack enabled. `nodeLinker: node-modules` keeps installs writing a conventional `node_modules/` tree (no PnP).
 
 ---
 
@@ -182,8 +184,8 @@ The project is configured for Netlify out-of-the-box:
 Connect the repo in Netlify's UI and it will auto-detect Vite. On every push to `main`, Netlify runs:
 
 ```bash
-npm install
-npm run build
+yarn install
+yarn build
 # publishes ./dist
 ```
 

@@ -9,18 +9,20 @@ Personal portfolio site (weion.dev) for Terry Fallows. Single-page app with a We
 ## Commands
 
 ```bash
-npm run dev          # Vite dev server on :5173 (host: true — accessible on LAN)
-npm run build        # tsc -b (project references) + vite build -> dist/
-npm run preview      # Serve the built dist/ locally
-npm run typecheck    # tsc -b --noEmit (no bundle)
-npm run lint         # biome lint
-npm run format       # biome format --write
-npm run format:check # biome format (no writes)
-npm run check        # biome check (lint + format + import sort)
-npm run check:fix    # biome check --write (the daily driver)
+yarn dev           # Vite dev server on :5173 (host: true — accessible on LAN)
+yarn build         # tsc -b (project references) + vite build -> dist/
+yarn preview       # Serve the built dist/ locally
+yarn typecheck     # tsc -b --noEmit (no bundle)
+yarn lint          # biome lint
+yarn format        # biome format --write
+yarn format:check  # biome format (no writes)
+yarn check         # biome check (lint + format + import sort)
+yarn check:fix     # biome check --write (the daily driver)
 ```
 
-There is no test suite. `npm run build` deliberately runs TypeScript as a project-reference build (`tsc -b`) before Vite, so a type error fails the Netlify build even though Vite itself would transpile through SWC.
+Yarn 4 (Berry) is the package manager. The runner binary is committed at `.yarn/releases/yarn-4.14.1.cjs` and selected via `yarnPath` in `.yarnrc.yml`, so Netlify (and any fresh checkout) runs Yarn 4 without needing Corepack or a separate install step. `nodeLinker: node-modules` is set so installs produce a conventional `node_modules/` tree — no PnP. The committed binary is needed because the canonical Yarn CDN at `repo.yarnpkg.com` currently returns 404 for the per-version `yarn.js` URLs; keep the binary checked in until that's fixed upstream.
+
+There is no test suite. `yarn build` deliberately runs TypeScript as a project-reference build (`tsc -b`) before Vite, so a type error fails the Netlify build even though Vite itself would transpile through SWC.
 
 ## Architecture
 
