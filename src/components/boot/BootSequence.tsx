@@ -43,14 +43,16 @@ interface BootLine {
  * {@link BootSequenceProps.onComplete} fires.
  *
  * Lines are revealed on independent timers (~350ms apart). At 2000ms the
- * overlay begins its `hud-boot-glitch-out` keyframe animation and
- * `onComplete` fires *at the same instant*, so `<main>` can start its
- * `hud-content-glitch-in` in parallel — the boot tears apart while the page
- * reassembles, no sequential fade-out-then-fade-in seam. The `done` flag
- * (which releases the body scroll lock) flips at 2650ms once the 600ms
- * glitch animation has settled. All timers are cleared on unmount. When
- * `skip` is true the entire animation is bypassed and the callback fires
- * immediately, which is how reduced-motion users land directly on the HUD.
+ * overlay begins its `hud-rgb-dissolve` keyframe animation and `onComplete`
+ * fires *at the same instant*, so `<main>` can start its `hud-rgb-reveal`
+ * in parallel — the boot tears apart while the page reassembles, no
+ * sequential fade-out-then-fade-in seam. The `done` flag (which releases
+ * the body scroll lock) flips in the same callback: by then the overlay is
+ * `pointer-events-none`, content is mounted at its final layout positions,
+ * and there's no reason to make the user wait through the reveal animation
+ * before scrolling. All timers are cleared on unmount. When `skip` is true
+ * the entire animation is bypassed and the callback fires immediately,
+ * which is how reduced-motion users land directly on the HUD.
  *
  * @example
  * ```tsx
@@ -86,23 +88,22 @@ export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
     const revealTimers = lines.map((line) =>
       window.setTimeout(() => setVisible((current) => [...current, line]), line.delay),
     );
-    // Fire onComplete at the same instant we start glitching out — this lets
-    // <main> begin its glitch-in animation in parallel, so the boot overlay
-    // is tearing apart while the page is reassembling for a continuous
-    // hand-off (no sequential fade-out-then-fade-in seam).
+    // Fire onComplete + release the scroll lock at the same instant we start
+    // glitching out — <main> begins its glitch-in animation in parallel
+    // (boot tears apart while the page reassembles, no sequential fade seam),
+    // and the user can scroll immediately. The boot overlay is already
+    // pointer-events-none from this moment on, and content is mounted in
+    // its final layout positions, so there's no reason to keep scroll
+    // disabled through the 700ms reveal animation.
     const fadeTimer = window.setTimeout(() => {
       setFading(true);
+      setDone(true);
       onComplete();
     }, 2000);
-    // After both transition keyframes settle (boot dissolve 600 ms, content
-    // reveal 700 ms — both started at 2000 ms), mark the overlay done so the
-    // body scroll lock releases.
-    const completeTimer = window.setTimeout(() => setDone(true), 2750);
 
     return () => {
       for (const id of revealTimers) window.clearTimeout(id);
       window.clearTimeout(fadeTimer);
-      window.clearTimeout(completeTimer);
     };
   }, [lines, onComplete, skip]);
 
