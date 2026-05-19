@@ -345,12 +345,21 @@ const WAVEFORM_SKELETON_HEIGHTS = [
 const HEATMAP_SKELETON_COLS = 52;
 
 /**
- * Loading placeholder for the language-distribution bars. Renders 5 bars at
- * deterministic widths with a horizontal scan-sweep over the row container.
- * The label and percent placeholders pulse independently so the row reads
- * busy even before the sweep arrives.
+ * Placeholder for the language-distribution bars. Renders 5 bar rows in the
+ * same 224 px height the live bars occupy so the panel box stays stable
+ * across all states.
+ *
+ * @remarks
+ * When `animated` is true (loading), each row carries a cyan scan-sweep,
+ * pulsing label/percent blocks, and a partial fill — reads as "data
+ * incoming". When `animated` is false (error), the same rows render as inert
+ * empty wells with static dim labels — reads as "no data" without implying
+ * a fetch is still in flight.
  */
-function LanguageBarsSkeleton() {
+function LanguageBarsSkeleton({ animated = true }: { animated?: boolean }) {
+  const pulseClass = animated ? 'hud-skeleton-pulse' : '';
+  const sweepClass = animated ? 'hud-skeleton-sweep' : '';
+  const inertOpacity = animated ? undefined : 0.5;
   return (
     <div className="flex flex-col justify-between" style={{ height: 224 }}>
       {LANG_SKELETON_WIDTHS.map((w, i) => (
@@ -361,39 +370,43 @@ function LanguageBarsSkeleton() {
             style={{ fontSize: 10, letterSpacing: '0.2em' }}
           >
             <span
-              className="hud-skeleton-pulse"
+              className={pulseClass}
               style={{
                 display: 'inline-block',
                 width: 88,
                 height: 8,
                 background: colors.line,
+                opacity: inertOpacity,
               }}
             />
             <span
-              className="hud-skeleton-pulse"
+              className={pulseClass}
               style={{
                 display: 'inline-block',
                 width: 32,
                 height: 8,
                 background: colors.line,
+                opacity: inertOpacity,
               }}
             />
           </div>
           <div
-            className="relative hud-skeleton-sweep"
+            className={`relative ${sweepClass}`}
             style={{
               height: 6,
               background: 'rgba(11,30,46,0.8)',
               border: `1px solid ${colors.line}`,
             }}
           >
-            <div
-              style={{
-                width: `${w}%`,
-                height: '100%',
-                background: `linear-gradient(to right, ${colors.line}, rgba(30, 58, 82, 0.25))`,
-              }}
-            />
+            {animated && (
+              <div
+                style={{
+                  width: `${w}%`,
+                  height: '100%',
+                  background: `linear-gradient(to right, ${colors.line}, rgba(30, 58, 82, 0.25))`,
+                }}
+              />
+            )}
           </div>
         </div>
       ))}
@@ -402,23 +415,30 @@ function LanguageBarsSkeleton() {
 }
 
 /**
- * Loading placeholder for the 30-day activity waveform. Identical container
- * dimensions to {@link Waveform} so the panel doesn't reflow when data
- * resolves; bars are pre-shaped to look like plausible activity and the whole
- * row carries a cyan scan-sweep overlay.
+ * Placeholder for the 30-day activity waveform. Identical container height
+ * to {@link Waveform} so the panel box doesn't reflow across states.
+ *
+ * @remarks
+ * When `animated` is true (loading), bars are shaped like a working-week
+ * cadence and carry a pulse + scan-sweep. When `animated` is false (error),
+ * the 30 bars render at a flat minimal height — visible structure, no
+ * implied activity.
  */
-function WaveformSkeleton() {
+function WaveformSkeleton({ animated = true }: { animated?: boolean }) {
   return (
-    <div className="relative hud-skeleton-sweep" style={{ height: 160 }}>
+    <div className={`relative ${animated ? 'hud-skeleton-sweep' : ''}`} style={{ height: 160 }}>
       <div className="flex items-end gap-1" style={{ height: '100%' }}>
         {WAVEFORM_SKELETON_HEIGHTS.map((h, i) => (
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: positional bars have no identity
             key={`wave-skel-${i}`}
-            className="flex-1 hud-skeleton-pulse"
+            className={`flex-1 ${animated ? 'hud-skeleton-pulse' : ''}`}
             style={{
-              height: `${Math.max(8, h * 100)}%`,
-              background: `linear-gradient(to top, ${colors.line}, rgba(30, 58, 82, 0.35))`,
+              height: animated ? `${Math.max(8, h * 100)}%` : '8%',
+              background: animated
+                ? `linear-gradient(to top, ${colors.line}, rgba(30, 58, 82, 0.35))`
+                : colors.line,
+              opacity: animated ? undefined : 0.5,
             }}
           />
         ))}
@@ -428,12 +448,16 @@ function WaveformSkeleton() {
 }
 
 /**
- * Loading placeholder for the year heatmap. Renders the full 7 × 52 grid in
- * the level-0 muted color with a single cyan scan-sweep across the surface
- * (reads as a radar pass over an empty grid). Layout matches
- * {@link YearHeatmap} so the panel height is stable through the transition.
+ * Placeholder for the year heatmap. Renders the full 7 × 52 grid of empty
+ * level-0 cells in the same layout as {@link YearHeatmap}, so the panel
+ * doesn't collapse when data is unavailable.
+ *
+ * @remarks
+ * When `animated` is true (loading), a cyan scan-sweep reads as a radar pass
+ * over an empty grid. When `animated` is false (error), the grid renders
+ * static — just empty squares filling the panel.
  */
-function YearHeatmapSkeleton() {
+function YearHeatmapSkeleton({ animated = true }: { animated?: boolean }) {
   const cells = HEATMAP_SKELETON_COLS * 7;
   return (
     <div>
@@ -444,7 +468,7 @@ function YearHeatmapSkeleton() {
               the real heatmap will. */}
           <div style={{ height: 14, marginBottom: 4 }} />
           <div
-            className="relative hud-skeleton-sweep"
+            className={`relative ${animated ? 'hud-skeleton-sweep' : ''}`}
             style={{
               display: 'grid',
               gridTemplateRows: 'repeat(7, minmax(0, 1fr))',
@@ -461,6 +485,7 @@ function YearHeatmapSkeleton() {
                   aspectRatio: '1 / 1',
                   background: HEATMAP_LEVEL_COLORS[0],
                   border: `1px solid ${colors.line}`,
+                  opacity: animated ? undefined : 0.75,
                 }}
               />
             ))}
@@ -474,11 +499,22 @@ function YearHeatmapSkeleton() {
 }
 
 /**
- * Loading placeholders for a row of stat tiles. Keeps each tile's label
- * visible (so the user sees what's loading) and replaces the value with a
- * pulsing block so the row reads as "data inbound".
+ * Placeholders for a row of stat tiles. Keeps each tile's label visible (so
+ * the user sees what slot is empty) and replaces the value with a value
+ * block.
+ *
+ * @remarks
+ * When `animated` is true (loading), the value block pulses — reads as
+ * "value inbound". When `animated` is false (error), the value block is
+ * static and dim — reads as "value unavailable".
  */
-function StatTilesSkeleton({ labels }: { labels: readonly string[] }) {
+function StatTilesSkeleton({
+  labels,
+  animated = true,
+}: {
+  labels: readonly string[];
+  animated?: boolean;
+}) {
   return (
     <>
       {labels.map((label) => (
@@ -490,8 +526,13 @@ function StatTilesSkeleton({ labels }: { labels: readonly string[] }) {
             {label}
           </div>
           <div
-            className="mt-0.5 hud-skeleton-pulse"
-            style={{ width: '70%', height: 14, background: colors.line }}
+            className={`mt-0.5 ${animated ? 'hud-skeleton-pulse' : ''}`}
+            style={{
+              width: '70%',
+              height: 14,
+              background: colors.line,
+              opacity: animated ? undefined : 0.5,
+            }}
           />
         </div>
       ))}
@@ -559,28 +600,31 @@ export function TelemetrySection() {
 
         <div className="grid md:grid-cols-2 gap-5">
           <Panel label="30-DAY LANGUAGE DISTRIBUTION" meta="VIA WAKATIME">
-            {status === 'loading' ? (
-              <LanguageBarsSkeleton />
-            ) : (
+            {status === 'live' ? (
+              // Fixed-height column with justify-between distributes the 5-6
+              // bars evenly across 224 px — the same vertical extent the
+              // waveform side occupies (waveform 160 + mt-4 16 + tile row 48),
+              // so the two bordered panel boxes in the top row stay equal
+              // height regardless of how many languages WakaTime returns.
               <div className="flex flex-col justify-between" style={{ height: 224 }}>
                 {bars.map((bar, i) => (
                   <BarRow key={bar.label} bar={bar} delay={i * 100} trigger={onScreen} />
                 ))}
               </div>
+            ) : (
+              <LanguageBarsSkeleton animated={status === 'loading'} />
             )}
             <StatusLine status={status} />
           </Panel>
 
           <Panel label="ACTIVITY WAVEFORM" meta="LAST 30 DAYS" variant="amber">
-            {status === 'loading' ? (
-              <WaveformSkeleton />
-            ) : (
+            {status === 'live' ? (
               <Waveform trigger={onScreen} heights={waveform} />
+            ) : (
+              <WaveformSkeleton animated={status === 'loading'} />
             )}
             <div className="mt-4 grid grid-cols-3 gap-3">
-              {status === 'loading' ? (
-                <StatTilesSkeleton labels={['AVG/DAY', 'PEAK', 'STREAK']} />
-              ) : (
+              {status === 'live' ? (
                 tiles.map((tile) => (
                   <div key={tile.label} className="p-2 border" style={{ borderColor: colors.line }}>
                     <div
@@ -601,6 +645,11 @@ export function TelemetrySection() {
                     </div>
                   </div>
                 ))
+              ) : (
+                <StatTilesSkeleton
+                  labels={['AVG/DAY', 'PEAK', 'STREAK']}
+                  animated={status === 'loading'}
+                />
               )}
             </div>
             <StatusLine status={status} />
@@ -609,15 +658,13 @@ export function TelemetrySection() {
 
         <div className="mt-5">
           <Panel label="ACTIVITY · LAST YEAR" meta="VIA WAKATIME" variant="cyan">
-            {status === 'loading' ? (
-              <YearHeatmapSkeleton />
-            ) : (
+            {status === 'live' ? (
               <YearHeatmap trigger={onScreen} heatmap={heatmap} />
+            ) : (
+              <YearHeatmapSkeleton animated={status === 'loading'} />
             )}
             <div className="mt-5 grid grid-cols-3 gap-3">
-              {status === 'loading' ? (
-                <StatTilesSkeleton labels={['TOTAL', 'TOP LANG', 'BEST DAY']} />
-              ) : (
+              {status === 'live' ? (
                 yearTiles.map((tile) => (
                   <div
                     key={tile.label}
@@ -648,6 +695,11 @@ export function TelemetrySection() {
                     </div>
                   </div>
                 ))
+              ) : (
+                <StatTilesSkeleton
+                  labels={['TOTAL', 'TOP LANG', 'BEST DAY']}
+                  animated={status === 'loading'}
+                />
               )}
             </div>
             <StatusLine status={status} />
