@@ -22,7 +22,7 @@ yarn check:fix     # biome check --write (the daily driver)
 
 Yarn 4 (Berry) is the package manager. The runner binary is committed at `.yarn/releases/yarn-4.14.1.cjs` and selected via `yarnPath` in `.yarnrc.yml`, so Netlify (and any fresh checkout) runs Yarn 4 without needing Corepack or a separate install step. `nodeLinker: node-modules` is set so installs produce a conventional `node_modules/` tree — no PnP. The committed binary is needed because the canonical Yarn CDN at `repo.yarnpkg.com` currently returns 404 for the per-version `yarn.js` URLs; keep the binary checked in until that's fixed upstream.
 
-There is no test suite. `yarn build` deliberately runs TypeScript as a project-reference build (`tsc -b`) before Vite, so a type error fails the Netlify build even though Vite itself would transpile through SWC.
+There is no test suite. `yarn build` deliberately runs TypeScript as a project-reference build (`tsc -b`) before Vite, so a type error fails the Netlify build even though Vite itself would transpile through Oxc.
 
 ## Architecture
 
@@ -38,7 +38,7 @@ The page is a stack of fixed/absolute layers, not a normal document flow. Z-indi
 | `z-10`    | `<main>` — scrolling sections (`Hero`, `Dossier`, `Capabilities`, `Archive`, `Telemetry`, `Eof`). Held at `opacity: 0` until `BootSequence` signals complete. |
 | `z-40`    | `TopChrome` / `BottomChrome` persistent HUD frame.                         |
 | `z-[60]`  | Scanlines / vignette / flicker overlay.                                    |
-| `z-[80]`  | `VideoFeedModal` when open — above chrome and FX but below the boot curtain. |
+| `z-[80]`  | `HudModal` dialogs when open (`VideoFeedModal`, the dossier record modal) — above chrome and FX but below the boot curtain. |
 | `z-[100]` | `BootSequence` overlay (gates first paint).                                |
 
 The amber lens (`z-[4]`) and atmospheric gradient (`z-[5]`) both live in `ScreenOverlays.tsx`. When adjusting overlay opacity, keep the amber lens stronger than the atmospheric — that's what gives white HUD copy enough contrast over the 3D scene.
@@ -59,7 +59,7 @@ If you change the placeholder visual, keep it close to the React-rendered BootSe
 ### Directory conventions
 
 - `src/scene/` — R3F scene graph children (Three.js / drei). Anything that renders inside `<Canvas>` lives here. Pure utilities used by scene children also live here, e.g. `goldbergGeometry.ts` builds the dual-polyhedron line geometry consumed by `HoloOrb`'s outer hex shell.
-- `src/components/hud/` — reusable HUD primitives (`Panel`, `AngularButton`, `CornerBrackets`, `SectionHeading`, `HologramPortrait`). These apply the angular clip-paths from `src/lib/tokens.ts`.
+- `src/components/hud/` — reusable HUD primitives (`Panel`, `AngularButton`, `CornerBrackets`, `SectionHeading`, `HologramPortrait`, `HudModal` — the shared sci-fi dialog shell with focus trap, `inert` background, and scroll lock). These apply the angular clip-paths from `src/lib/tokens.ts`.
 - `src/components/chrome/`, `components/overlays/`, `components/boot/`, `components/text/` — non-reusable layout/FX pieces.
 - `src/components/SceneErrorBoundary.tsx` — class-component error boundary scoped to the lazy `HudScene` mount. Catches WebGL/postprocessing failures (older Intel iGPUs, blocked hardware acceleration, lost context) so they degrade to "no 3D background" rather than unmounting the whole React tree.
 - `src/sections/` — one file per scrollable page section; these compose `hud/` primitives with data from `src/data/portfolio.ts`.
@@ -81,7 +81,7 @@ When adding a color, add it to both places using the same name (kebab-case in CS
 
 ### Bundle splitting and build-time HTML transforms
 
-`vite.config.ts` manually chunks `three`, `@react-three/fiber` + `@react-three/drei`, and `@react-three/postprocessing` + `postprocessing` into separate vendor chunks — the R3F stack is ~the largest dependency and benefits from its own cacheable chunks. `HudScene` is a separate chunk too because `App.tsx` lazy-imports it. Preserve all of these splits when touching build config.
+`vite.config.ts` manually chunks (Rolldown `build.rolldownOptions.output.codeSplitting.groups` — Vite 8 dropped the object-form `manualChunks`) `three`, `@react-three/fiber` + `@react-three/drei`, and `@react-three/postprocessing` + `postprocessing` into separate vendor chunks — the R3F stack is ~the largest dependency and benefits from its own cacheable chunks. `HudScene` is a separate chunk too because `App.tsx` lazy-imports it. Preserve all of these splits when touching build config.
 
 Two custom in-config Vite plugins run during `vite build`:
 

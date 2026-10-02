@@ -9,7 +9,7 @@ Personal portfolio site for Terry Fallows. A single-page application built on **
 | Layer | Library |
 | --- | --- |
 | Bundler / dev server | Vite 6 |
-| Framework | React 19 (SWC transform) |
+| Framework | React 19 (Oxc transform via `@vitejs/plugin-react`) |
 | Language | TypeScript 5 (strict) |
 | 3D | Three.js + `@react-three/fiber` + `@react-three/drei` |
 | Styling | Tailwind CSS v4 (CSS-first `@theme` config) |
