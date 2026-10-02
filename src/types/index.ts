@@ -14,8 +14,8 @@ export interface Operative {
   realName: string;
   /** Job title / current role (e.g. `'SENIOR SOFTWARE ENGINEER'`). */
   role: string;
-  /** Current employer or organisation. */
-  affiliation: string;
+  /** Current employer or organisation; `null` hides it in the hero and dossier. */
+  affiliation: string | null;
   /** Geographic locator string in HUD format (e.g. `'EARTH // SOL SYSTEM'`). */
   location: string;
   /** IANA-ish timezone offset rendered in the chrome (e.g. `'UTC+01:00'`). */
@@ -24,6 +24,26 @@ export interface Operative {
   status: string;
   /** One-line tagline / current focus shown in the hero. */
   tagline: string;
+}
+
+/**
+ * One role in the SERVICE RECORD timeline rendered by `DossierSection`.
+ */
+export interface Experience {
+  /** Employer or institution. */
+  org: string;
+  /** Job title or course. */
+  role: string;
+  /** Start date, `YYYY-MM` (or `YYYY`). */
+  start: string;
+  /** End date, `YYYY-MM` (or `YYYY`); `null` renders as PRESENT. */
+  end: string | null;
+  /** Place and work mode (e.g. `'SHIPLEY, UK · REMOTE'`). */
+  location?: string;
+  /** Detail paragraphs shown in the record modal. */
+  summary?: string[];
+  /** Skills gained, shown as chips in the record modal. */
+  skills?: string[];
 }
 
 /**

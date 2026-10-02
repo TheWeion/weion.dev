@@ -1,4 +1,5 @@
-import { ChevronRight, Cpu, Github, Radio, Zap } from 'lucide-react';
+import { IconBrandGithub, IconBrandLinkedin } from '@tabler/icons-react';
+import { ChevronRight, Cpu, Radio, Zap } from 'lucide-react';
 import { AngularButton } from '@/components/hud/AngularButton';
 import { HologramPortrait } from '@/components/hud/HologramPortrait';
 import { GlitchText } from '@/components/text/GlitchText';
@@ -18,7 +19,7 @@ interface StatTile {
 }
 
 const stats: StatTile[] = [
-  { icon: <Cpu size={12} aria-hidden />, label: 'STATUS', value: 'ACTIVE' },
+  { icon: <Cpu size={12} aria-hidden />, label: 'STATUS', value: operative.status },
   { icon: <Radio size={12} aria-hidden />, label: 'TIMEZONE', value: operative.timezone },
   { icon: <Zap size={12} aria-hidden />, label: 'FOCUS', value: 'Android & iOS' },
 ];
@@ -77,8 +78,12 @@ export function HeroSection() {
               }}
             >
               <span style={{ color: colors.amber }}>{operative.role}</span>
-              <span style={{ color: colors.muted }}> @ </span>
-              <span style={{ color: colors.halo }}>{operative.affiliation}</span>
+              {typeof operative.affiliation === 'string' && (
+                <>
+                  <span style={{ color: colors.muted }}> @ </span>
+                  <span style={{ color: colors.halo }}>{operative.affiliation}</span>
+                </>
+              )}
             </div>
 
             <p
@@ -93,7 +98,10 @@ export function HeroSection() {
                 <ChevronRight size={14} aria-hidden /> OPERATIONS ARCHIVE
               </AngularButton>
               <AngularButton href={socials.github} variant="ghost">
-                <Github size={14} aria-hidden /> GITHUB
+                <IconBrandGithub size={14} aria-hidden /> GITHUB
+              </AngularButton>
+              <AngularButton href={socials.linkedin} variant="ghost">
+                <IconBrandLinkedin size={14} aria-hidden /> LINKEDIN
               </AngularButton>
             </div>
 

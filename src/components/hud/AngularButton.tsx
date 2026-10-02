@@ -45,7 +45,7 @@ interface AngularButtonProps {
  * @example
  * ```tsx
  * <AngularButton href={socials.github}>
- *   <Github size={14} aria-hidden /> GITHUB
+ *   <IconBrandGithub size={14} aria-hidden /> GITHUB
  * </AngularButton>
  *
  * <AngularButton href="#archive" external={false} variant="amber">

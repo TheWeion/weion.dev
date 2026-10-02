@@ -452,3 +452,9 @@
     opacity: 1 !important;
   }
 }
+
+/* Stroke-only icon sets; stops dark-mode extensions (e.g. Night Eye) forcing a fill. */
+svg:is(.tabler-icon, .lucide),
+svg:is(.tabler-icon, .lucide) :is(path, rect, circle, polyline, line) {
+  fill: none !important;
+}
