@@ -1,8 +1,23 @@
 import path from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, type Plugin } from 'vite';
+import { operative } from './src/data/portfolio';
+
+// Fills %META_TITLE% / %META_DESCRIPTION% in index.html from `operative`, so
+// <title>, description, and og:* tags share portfolio.ts as source of truth.
+function operativeMeta(): Plugin {
+  const titleCase = (s: string) => s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  const attr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  const title = attr(`${titleCase(operative.realName)} — ${titleCase(operative.role)}`);
+  const description = attr(operative.tagline);
+  return {
+    name: 'operative-meta',
+    transformIndexHtml: (html) =>
+      html.replaceAll('%META_TITLE%', title).replaceAll('%META_DESCRIPTION%', description),
+  };
+}
 
 // Injects <link rel="preload" as="font"> tags for the woff2 files that show
 // up first paint (body copy + primary headings). With self-hosted fonts the
@@ -64,6 +79,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    operativeMeta(),
     preloadCriticalFonts(),
     inlineAppStylesheet(),
     // Emits dist/stats.html during `vite build` only — Rollup plugins are
@@ -84,12 +100,17 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: true,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          three: ['three'],
-          r3f: ['@react-three/fiber', '@react-three/drei'],
-          postprocessing: ['@react-three/postprocessing', 'postprocessing'],
+        codeSplitting: {
+          groups: [
+            { name: 'three', test: /node_modules[\\/]three[\\/]/ },
+            { name: 'r3f', test: /node_modules[\\/]@react-three[\\/](fiber|drei)[\\/]/ },
+            {
+              name: 'postprocessing',
+              test: /node_modules[\\/](@react-three[\\/])?postprocessing[\\/]/,
+            },
+          ],
         },
       },
     },

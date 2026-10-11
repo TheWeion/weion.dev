@@ -1,4 +1,5 @@
-import { ExternalLink, Github, PlayCircle } from 'lucide-react';
+import { IconBrandGithub } from '@tabler/icons-react';
+import { ExternalLink, PlayCircle } from 'lucide-react';
 import { type ReactNode, useRef, useState } from 'react';
 import { CornerBrackets } from '@/components/hud/CornerBrackets';
 import { SectionHeading } from '@/components/hud/SectionHeading';
@@ -173,12 +174,12 @@ function ProjectCard({ project, onOpenFeed }: ProjectCardProps) {
             </ProjectLink>
           )}
           {project?.fe && (
-            <ProjectLink href={project.fe} icon={<Github size={11} aria-hidden />}>
+            <ProjectLink href={project.fe} icon={<IconBrandGithub size={11} aria-hidden />}>
               FE
             </ProjectLink>
           )}
           {project?.be && (
-            <ProjectLink href={project.be} icon={<Github size={11} aria-hidden />}>
+            <ProjectLink href={project.be} icon={<IconBrandGithub size={11} aria-hidden />}>
               BE
             </ProjectLink>
           )}

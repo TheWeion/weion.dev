@@ -1,9 +1,11 @@
-import { Fragment, useRef } from 'react';
+import { Fragment, useRef, useState } from 'react';
+import { HudModal } from '@/components/hud/HudModal';
 import { Panel } from '@/components/hud/Panel';
 import { SectionHeading } from '@/components/hud/SectionHeading';
-import { bio, operative, signoff } from '@/data/portfolio';
+import { bio, education, experience, operative, signoff } from '@/data/portfolio';
 import { useOnScreen } from '@/hooks/useOnScreen';
-import { colors } from '@/lib/tokens';
+import { clipPaths, colors } from '@/lib/tokens';
+import type { Experience } from '@/types';
 
 /**
  * Section 02 — personnel file with biographical record, vitals, and known
@@ -21,7 +23,9 @@ export function DossierSection() {
 
   const vitals: Array<[string, string]> = [
     ['CODENAME', operative.codename],
-    ['AFFILIATION', operative.affiliation],
+    ...(typeof operative.affiliation === 'string'
+      ? [['AFFILIATION', operative.affiliation] as [string, string]]
+      : []),
     ['SECTOR', operative.location],
     ['TZ', operative.timezone],
     ['STATUS', operative.status],
@@ -79,7 +83,159 @@ export function DossierSection() {
             </Panel>
           </div>
         </div>
+
+        <Panel label="SERVICE RECORD" meta={`${experience.length} ENTRIES`} className="mt-6">
+          <Timeline entries={experience} />
+        </Panel>
+
+        <Panel label="EDUCATION" meta={`${education.length} ENTRIES`} className="mt-6">
+          <Timeline entries={education} />
+        </Panel>
       </div>
     </section>
+  );
+}
+
+const fmtDate = (date: string | null) => date?.replace('-', '.') ?? 'PRESENT';
+
+/**
+ * Vertical dated list shared by the SERVICE RECORD and EDUCATION panels.
+ * Each entry is a button that opens {@link RecordModal} with its details.
+ */
+function Timeline({ entries }: { entries: Experience[] }) {
+  const [selected, setSelected] = useState<Experience | null>(null);
+
+  return (
+    <>
+      <ol className="relative border-l pl-6 space-y-3" style={{ borderColor: colors.line }}>
+        {entries.map((entry) => (
+          <li key={`${entry.org}-${entry.role}-${entry.start}`} className="relative">
+            <span
+              aria-hidden
+              className="absolute -left-[29px] top-3.5 size-2 rotate-45"
+              style={{ background: entry.end ? colors.muted : colors.amber }}
+            />
+            <button
+              type="button"
+              onClick={() => setSelected(entry)}
+              aria-haspopup="dialog"
+              className="group w-full text-left px-3 py-2 -mx-3 border border-transparent transition-colors hover:border-line hover:bg-[rgba(245,166,35,0.06)] focus-visible:border-amber"
+            >
+              <div
+                className="font-mono-tech text-xs"
+                style={{ color: colors.amber, letterSpacing: '0.2em' }}
+              >
+                {fmtDate(entry.start)} — {fmtDate(entry.end)}
+              </div>
+              <div className="font-body text-base" style={{ color: colors.bright }}>
+                {entry.role}
+              </div>
+              <div
+                className="flex items-center justify-between gap-3 font-mono-tech text-xs"
+                style={{ color: colors.halo }}
+              >
+                {entry.org}
+                <span
+                  className="opacity-60 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                  style={{ color: colors.amber, letterSpacing: '0.2em' }}
+                >
+                  ACCESS &gt;
+                </span>
+              </div>
+            </button>
+          </li>
+        ))}
+      </ol>
+      {selected && <RecordModal entry={selected} onClose={() => setSelected(null)} />}
+    </>
+  );
+}
+
+/** {@link HudModal} showing one timeline entry's details and skills gained. */
+function RecordModal({ entry, onClose }: { entry: Experience; onClose: () => void }) {
+  return (
+    <HudModal
+      ariaLabel={`Record for ${entry.role} at ${entry.org}`}
+      eyebrow="// PERSONNEL RECORD"
+      closeLabel="Close record"
+      onClose={onClose}
+      maxWidth="clamp(640px, 55vw, 1000px)"
+      heading={
+        <div className="flex items-baseline gap-2 lg:gap-3 flex-wrap">
+          <span
+            className="font-mono-tech text-[11px] lg:text-xs 2xl:text-sm"
+            style={{ color: colors.muted }}
+          >
+            {fmtDate(entry.start)} — {fmtDate(entry.end)}
+          </span>
+          <span style={{ color: colors.line }}>|</span>
+          <span
+            className="font-display font-bold tracking-wide text-[1.1rem] lg:text-xl 2xl:text-2xl"
+            style={{ color: colors.bright }}
+          >
+            {entry.role}
+          </span>
+          <span
+            className="font-mono-tech text-[10px] lg:text-xs 2xl:text-sm"
+            style={{ color: colors.muted }}
+          >
+            · {entry.org}
+          </span>
+        </div>
+      }
+    >
+      <div className="relative px-4 py-4 lg:px-6 lg:py-5 space-y-4 lg:space-y-5">
+        {entry.location && (
+          <div
+            className="font-mono-tech text-xs lg:text-sm"
+            style={{ color: colors.halo, letterSpacing: '0.15em' }}
+          >
+            <span style={{ color: colors.amber }}>&gt; </span>
+            {entry.location}
+          </div>
+        )}
+        {entry.summary?.map((paragraph) => (
+          <p
+            key={paragraph}
+            className="font-body text-base lg:text-lg 2xl:text-xl leading-relaxed"
+            style={{ color: colors.ink }}
+          >
+            {paragraph}
+          </p>
+        ))}
+        {!entry.summary && (
+          <p className="font-mono-tech text-xs lg:text-sm" style={{ color: colors.muted }}>
+            NO FURTHER DETAIL ON FILE.
+          </p>
+        )}
+      </div>
+      {entry.skills && entry.skills.length > 0 && (
+        <div className="px-4 py-3 lg:px-6 lg:py-4 border-t" style={{ borderColor: colors.line }}>
+          <div
+            className="font-body font-semibold uppercase mb-2 lg:mb-3 text-[10px] lg:text-xs"
+            style={{ color: colors.amber, letterSpacing: '0.3em' }}
+          >
+            // SKILLS ACQUIRED
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {entry.skills.map((skill) => (
+              <span
+                key={skill}
+                className="px-3 py-1.5 lg:px-4 lg:py-2 font-body font-semibold uppercase text-[11px] lg:text-[13px] 2xl:text-sm"
+                style={{
+                  letterSpacing: '0.15em',
+                  background: 'rgba(245,166,35,0.1)',
+                  border: `1px solid ${colors.amber}`,
+                  color: colors.amberHot,
+                  clipPath: clipPaths.chip,
+                }}
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </HudModal>
   );
 }

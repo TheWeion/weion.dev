@@ -1,0 +1,249 @@
+# Pages CMS configuration — https://pagescms.org/docs/configuration/
+#
+# Edits made at app.pagescms.org are committed straight to this repo, which
+# triggers a Netlify rebuild. Every file below is validated at build time by
+# src/data/portfolio.ts, so a malformed save fails the deploy instead of
+# shipping a broken page.
+
+media:
+  input: public/videos
+  output: /videos
+  categories: [video]
+
+content:
+  - name: profile
+    label: Profile
+    type: file
+    path: src/content/profile.json
+    format: json
+    fields:
+      - name: operative
+        label: Operative
+        type: object
+        required: true
+        fields:
+          - name: codename
+            label: Codename
+            type: string
+            required: true
+          - name: realName
+            label: Real name
+            type: string
+            required: true
+            description: Stored exactly as typed (the site uses uppercase).
+          - name: role
+            label: Role / headline
+            type: string
+            required: true
+            description: Also used for the page title and meta description.
+          - name: affiliation
+            label: Affiliation
+            type: string
+            description: Current employer. Leave blank to hide it.
+          - name: location
+            label: Location
+            type: string
+            required: true
+          - name: timezone
+            label: Timezone
+            type: string
+            required: true
+            description: "e.g. UTC+01:00"
+          - name: status
+            label: Status badge
+            type: string
+            required: true
+            description: "e.g. AVAILABLE, ACTIVE, STANDBY"
+          - name: tagline
+            label: Tagline
+            type: text
+            required: true
+      - name: bio
+        label: Bio
+        type: text
+        required: true
+      - name: signoff
+        label: Sign-off banner
+        type: string
+        required: true
+      - name: socials
+        label: Social links
+        type: object
+        required: true
+        fields:
+          - name: github
+            label: GitHub URL
+            type: string
+            required: true
+          - name: linkedin
+            label: LinkedIn URL
+            type: string
+            required: true
+          - name: email
+            label: Email link
+            type: string
+            required: true
+            pattern:
+              regex: "^mailto:.+@.+"
+              message: "Must start with mailto: (e.g. mailto:you@example.com)"
+
+  - name: experience
+    label: Service record
+    type: file
+    path: src/content/experience.json
+    format: json
+    list: true
+    fields:
+      - name: org
+        label: Organisation
+        type: string
+        required: true
+      - name: role
+        label: Role
+        type: string
+        required: true
+      - name: start
+        label: Start
+        type: string
+        required: true
+        description: YYYY-MM (or YYYY)
+        pattern:
+          regex: "^\\d{4}(-(0[1-9]|1[0-2]))?$"
+          message: Use YYYY-MM or YYYY
+      - name: end
+        label: End
+        type: string
+        description: YYYY-MM (or YYYY). Leave blank if ongoing (shows PRESENT).
+        pattern:
+          regex: "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+          message: Use YYYY-MM or YYYY, or leave blank
+      - name: location
+        label: Location
+        type: string
+        description: "e.g. SHIPLEY, UK · REMOTE"
+      - name: summary
+        label: Summary paragraphs
+        type: text
+        list: true
+      - name: skills
+        label: Skills acquired
+        type: string
+        list: true
+
+  - name: education
+    label: Education
+    type: file
+    path: src/content/education.json
+    format: json
+    list: true
+    fields:
+      - name: org
+        label: Organisation
+        type: string
+        required: true
+      - name: role
+        label: Role
+        type: string
+        required: true
+      - name: start
+        label: Start
+        type: string
+        required: true
+        description: YYYY-MM (or YYYY)
+        pattern:
+          regex: "^\\d{4}(-(0[1-9]|1[0-2]))?$"
+          message: Use YYYY-MM or YYYY
+      - name: end
+        label: End
+        type: string
+        description: YYYY-MM (or YYYY). Leave blank if ongoing (shows PRESENT).
+        pattern:
+          regex: "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+          message: Use YYYY-MM or YYYY, or leave blank
+      - name: location
+        label: Location
+        type: string
+        description: "e.g. SHIPLEY, UK · REMOTE"
+      - name: summary
+        label: Summary paragraphs
+        type: text
+        list: true
+      - name: skills
+        label: Skills acquired
+        type: string
+        list: true
+
+  - name: skills
+    label: Skills
+    type: file
+    path: src/content/skills.json
+    format: json
+    fields:
+      - name: skills
+        label: All skills
+        type: string
+        list: true
+        description: Rendered in this order — put higher-priority skills first.
+      - name: coreSkills
+        label: Core skills
+        type: string
+        list: true
+        description: Highlighted in amber. Should also appear in the full list.
+
+  - name: projects
+    label: Projects
+    type: file
+    path: src/content/projects.json
+    format: json
+    list: true
+    fields:
+      - name: id
+        label: ID
+        type: string
+        required: true
+        description: Two-digit display number, e.g. 05
+      - name: name
+        label: Name
+        type: string
+        required: true
+      - name: codename
+        label: Codename
+        type: string
+        required: true
+      - name: summary
+        label: Summary
+        type: text
+        required: true
+      - name: stack
+        label: Stack
+        type: string
+        list: true
+      - name: live
+        label: Live URL
+        type: string
+        description: Leave blank to hide the live link.
+      - name: fe
+        label: Frontend repo URL
+        type: string
+        description: Leave blank to hide.
+      - name: be
+        label: Backend repo URL
+        type: string
+        description: Leave blank to hide.
+      - name: preview
+        label: Preview footage
+        type: object
+        description: Set both formats, or neither to hide the VIEW FEED button.
+        fields:
+          - name: webm
+            label: WebM
+            type: file
+            options:
+              path: public/videos/projects
+              extensions: [webm]
+          - name: mp4
+            label: MP4
+            type: file
+            options:
+              path: public/videos/projects
+              extensions: [mp4]

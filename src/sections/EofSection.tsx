@@ -1,4 +1,5 @@
-import { Github, Mail } from 'lucide-react';
+import { IconBrandGithub, IconBrandLinkedin } from '@tabler/icons-react';
+import { Mail } from 'lucide-react';
 import { useRef } from 'react';
 import { AngularButton } from '@/components/hud/AngularButton';
 import { SectionHeading } from '@/components/hud/SectionHeading';
@@ -34,7 +35,10 @@ export function EofSection() {
 
         <div className="flex flex-wrap items-center justify-center gap-3">
           <AngularButton href={socials.github} variant="amber">
-            <Github size={14} aria-hidden /> GITHUB / THEWEION
+            <IconBrandGithub size={14} aria-hidden /> GITHUB / THEWEION
+          </AngularButton>
+          <AngularButton href={socials.linkedin} variant="ghost">
+            <IconBrandLinkedin size={14} aria-hidden /> LINKEDIN / TERRYFALLOWS
           </AngularButton>
           <AngularButton href={socials.email} variant="ghost">
             <Mail size={14} aria-hidden /> SEND TRANSMISSION

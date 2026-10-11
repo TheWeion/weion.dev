@@ -9,6 +9,8 @@
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "paths": { "@/*": ["./src/*"] },
     "noEmit": true,
 
     "strict": true,
