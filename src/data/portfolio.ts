@@ -56,6 +56,16 @@ function strList(value: unknown, path: string): string[] {
   return optStrList(value, path) ?? [];
 }
 
+/**
+ * Email address as a `mailto:` href. The CMS stores the bare address; a
+ * leading `mailto:` is tolerated so older content keeps working.
+ */
+function mailto(value: unknown, path: string): string {
+  const address = str(value, path).trim().replace(/^mailto:/i, '');
+  if (!/^[^\s@]+@[^\s@]+$/.test(address)) fail(path, `an email address, got "${address}"`);
+  return `mailto:${address}`;
+}
+
 const DATE_RE = /^\d{4}(-(0[1-9]|1[0-2]))?$/;
 
 function date(value: unknown, path: string): string {
@@ -201,5 +211,6 @@ export const projects: Project[] = arr(projectsData, 'projects.json').map((p, i)
 export const socials = {
   github: str(socialsData.github, 'profile.json#socials.github'),
   linkedin: str(socialsData.linkedin, 'profile.json#socials.linkedin'),
-  email: str(socialsData.email, 'profile.json#socials.email'),
+  /** `mailto:` href built from the bare address stored in the CMS. */
+  email: mailto(socialsData.email, 'profile.json#socials.email'),
 } as const;

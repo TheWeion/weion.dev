@@ -95,12 +95,13 @@ content:
             type: string
             required: true
           - name: email
-            label: Email link
+            label: Email address
             type: string
             required: true
+            description: "Just the address, e.g. you@example.com — the mailto: link is added automatically."
             pattern:
-              regex: "^mailto:.+@.+"
-              message: "Must start with mailto: (e.g. mailto:you@example.com)"
+              regex: "^(mailto:)?[^\\s@]+@[^\\s@]+$"
+              message: "Must be an email address (e.g. you@example.com)"
 
   - name: experience
     label: Service record
