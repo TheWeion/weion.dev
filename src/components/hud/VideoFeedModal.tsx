@@ -55,6 +55,11 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
   const [muted, setMuted] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [scrubbing, setScrubbing] = useState(false);
+  // Whether playback should resume when the current drag ends; `null` when
+  // not scrubbing. A ref so the video's onPause handler can read it without
+  // re-rendering mid-drag.
+  const resumeAfterScrubRef = useRef<boolean | null>(null);
 
   const open = project?.preview != null;
 
@@ -94,13 +99,32 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
     setMuted(v.muted);
   };
 
-  const seek = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const seek = (event: React.ChangeEvent<HTMLInputElement>) => {
     const v = videoRef.current;
     if (!v || !duration) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const ratio = (event.clientX - rect.left) / rect.width;
-    v.currentTime = ratio * duration;
+    v.currentTime = Number(event.currentTarget.value);
     setCurrentTime(v.currentTime);
+  };
+
+  // Pause while dragging so frames don't fight the scrub, then resume if the
+  // feed was playing. The release listener lives on window so letting go
+  // outside the track still ends the drag.
+  const startScrub = () => {
+    const v = videoRef.current;
+    if (!v || resumeAfterScrubRef.current !== null) return;
+    resumeAfterScrubRef.current = !v.paused;
+    v.pause();
+    setScrubbing(true);
+    const endScrub = () => {
+      window.removeEventListener('pointerup', endScrub);
+      window.removeEventListener('pointercancel', endScrub);
+      const resume = resumeAfterScrubRef.current;
+      resumeAfterScrubRef.current = null;
+      setScrubbing(false);
+      if (resume) videoRef.current?.play().catch(() => setPlaying(false));
+    };
+    window.addEventListener('pointerup', endScrub);
+    window.addEventListener('pointercancel', endScrub);
   };
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -145,7 +169,10 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
           onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
           onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
           onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
+          onPause={() => {
+            // A scrub's temporary pause shouldn't flip the play/pause icon.
+            if (resumeAfterScrubRef.current === null) setPlaying(false);
+          }}
           className="absolute inset-0 w-full h-full"
         >
           <source src={project.preview.webm} type="video/webm" />
@@ -205,22 +232,48 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
       {/* Controls */}
       <div className="px-4 py-3 border-t" style={{ borderColor: colors.line }}>
         {/* Scrub bar */}
-        <button
-          type="button"
-          aria-label="Seek"
-          onClick={seek}
-          className="relative block w-full mb-3 cursor-pointer"
-          style={{ height: 4, background: 'rgba(11,30,46,0.8)' }}
-        >
+        {/* 16px hit area around a 4px visual track; the negative top margin
+            keeps the track where the old 4px bar sat so the layout (and
+            HudModal's measured ~200px chrome) is unchanged. */}
+        <div className="group relative -mt-1.5 mb-1.5 h-4">
           <div
-            className="absolute inset-y-0 left-0"
+            aria-hidden
+            className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 transition-[height] group-hover:h-1.5"
+            style={{ background: 'rgba(11,30,46,0.8)' }}
+          >
+            <div
+              className="absolute inset-y-0 left-0"
+              style={{
+                width: `${progress}%`,
+                background: `linear-gradient(to right, ${colors.amber}, ${colors.amberHot})`,
+                boxShadow: `0 0 8px ${colors.amber}80`,
+              }}
+            />
+          </div>
+          {/* Playhead diamond — shown on hover, keyboard focus, or while dragging */}
+          <div
+            aria-hidden
+            className={`absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 pointer-events-none transition-opacity group-hover:opacity-100 group-has-[:focus-visible]:opacity-100 ${scrubbing ? 'opacity-100' : 'opacity-0'}`}
             style={{
-              width: `${progress}%`,
-              background: `linear-gradient(to right, ${colors.amber}, ${colors.amberHot})`,
-              boxShadow: `0 0 8px ${colors.amber}80`,
+              left: `${progress}%`,
+              background: colors.amberHot,
+              boxShadow: `0 0 8px ${colors.amber}`,
             }}
           />
-        </button>
+          <input
+            type="range"
+            aria-label="Seek"
+            aria-valuetext={`${fmtTime(currentTime)} of ${fmtTime(duration)}`}
+            min={0}
+            max={duration || 0}
+            step="any"
+            value={currentTime}
+            disabled={!duration}
+            onChange={seek}
+            onPointerDown={startScrub}
+            className="hud-scrubber absolute inset-0 w-full h-full"
+          />
+        </div>
 
         <div className="flex items-center gap-3">
           <button

@@ -194,8 +194,14 @@ export function HudModal({
             </button>
           </div>
 
-          {/* Body scrolls under the pinned header when it outgrows the viewport */}
-          <div className="min-h-0 overflow-y-auto overscroll-contain">{children}</div>
+          {/* Body scrolls under the pinned header when it outgrows the viewport.
+              overflow-x is hidden explicitly: overflow-y:auto would otherwise
+              make x scrollable too, and CornerBrackets' 1px outset at the
+              body's edge (e.g. the video frame) would add a horizontal
+              scrollbar on classic-scrollbar platforms. */}
+          <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
+            {children}
+          </div>
         </div>
       </div>
     </div>,
