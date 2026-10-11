@@ -20,6 +20,30 @@ interface VideoFeedModalProps {
   onClose: () => void;
 }
 
+/** Non-standard per-engine audio probes; none is available everywhere. */
+type AudioProbeVideo = HTMLVideoElement & {
+  mozHasAudio?: boolean;
+  audioTracks?: { length: number };
+  webkitAudioDecodedByteCount?: number;
+};
+
+/**
+ * Whether the playing source has an audio track, or `null` if it can't be
+ * told yet. Firefox exposes `mozHasAudio` and Safari `audioTracks` as soon as
+ * metadata loads; Chromium only reports decoded audio bytes, so a zero count
+ * is trusted as "no audio" once half a second has played.
+ */
+function detectAudio(video: HTMLVideoElement): boolean | null {
+  const v = video as AudioProbeVideo;
+  if (typeof v.mozHasAudio === 'boolean') return v.mozHasAudio;
+  if (v.audioTracks) return v.audioTracks.length > 0;
+  if (typeof v.webkitAudioDecodedByteCount === 'number') {
+    if (v.webkitAudioDecodedByteCount > 0) return true;
+    return v.currentTime > 0.5 ? false : null;
+  }
+  return null;
+}
+
 function fmtTime(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
   const m = Math.floor(seconds / 60);
@@ -56,6 +80,9 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [scrubbing, setScrubbing] = useState(false);
+  // `null` = not known yet; the mute control stays enabled until a source is
+  // positively identified as silent (see `detectAudio`).
+  const [hasAudio, setHasAudio] = useState<boolean | null>(null);
   // Whether playback should resume when the current drag ends; `null` when
   // not scrubbing. A ref so the video's onPause handler can read it without
   // re-rendering mid-drag.
@@ -166,8 +193,17 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
           loop
           playsInline
           autoPlay
-          onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+          onTimeUpdate={(e) => {
+            const v = e.currentTarget;
+            setCurrentTime(v.currentTime);
+            if (hasAudio === null) setHasAudio(detectAudio(v));
+          }}
+          onLoadedMetadata={(e) => {
+            // Fires per source (the element is keyed on project id), so this
+            // also resets audio detection when switching feeds.
+            setDuration(e.currentTarget.duration);
+            setHasAudio(detectAudio(e.currentTarget));
+          }}
           onPlay={() => setPlaying(true)}
           onPause={() => {
             // A scrub's temporary pause shouldn't flip the play/pause icon.
@@ -317,11 +353,17 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
           <button
             type="button"
             onClick={toggleMute}
-            aria-label={muted ? 'Unmute' : 'Mute'}
-            className="p-1.5 transition-colors"
+            disabled={hasAudio === false}
+            aria-label={hasAudio === false ? 'No audio track' : muted ? 'Unmute' : 'Mute'}
+            title={hasAudio === false ? 'NO AUDIO TRACK' : undefined}
+            className="p-1.5 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
             style={{ border: `1px solid ${colors.line}`, color: colors.halo }}
           >
-            {muted ? <VolumeX size={14} aria-hidden /> : <Volume2 size={14} aria-hidden />}
+            {muted || hasAudio === false ? (
+              <VolumeX size={14} aria-hidden />
+            ) : (
+              <Volume2 size={14} aria-hidden />
+            )}
           </button>
         </div>
       </div>
