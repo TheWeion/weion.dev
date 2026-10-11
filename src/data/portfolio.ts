@@ -48,7 +48,7 @@ export const experience: Experience[] = [
     summary: [
       'In my role, I contributed to the development of innovative software solutions, including the HomeSight app for care homes. I collaborated with a diverse agile team, focusing on enhancing user experience and ensuring effective communication with stakeholders. My work on TV products further honed my skills in managing projects under tight deadlines and confidentiality agreements.',
     ],
-    skills: ['JavaScript', 'TypeScript'],
+    skills: ['Agile', 'Android', 'Bash', 'Confluence', 'Figma', 'GitHub MCP', 'iOS Development', 'JavaScript', 'Jenkins', 'Jira', 'Kotlin', 'LESS', 'Python', 'React Native', 'React.js', 'Redux Thunk', 'Redux.js', 'RTSP', 'Scrum', 'Swift', 'TypeScript', 'Vite', 'Xcode'],
   },
   {
     org: 'VANTIVA',
@@ -59,7 +59,7 @@ export const experience: Experience[] = [
     summary: [
       'In my role as a Software Engineer at Vantiva, I contributed to a globally distributed agile team, focusing on delivering innovative solutions for clients. I played a key role in enhancing the set-top box UI stack and developed applications for Android, iOS, and TV platforms. My work aimed to improve user engagement and streamline the viewing experience for customers.',
     ],
-    skills: ['JavaScript', 'TypeScript'],
+    skills: ['Agile', 'Android', 'Set Top Box UI/UX', 'Bitbucket', 'Confluence', 'iOS Development', 'Groovy', 'JavaScript', 'Jenkins', 'Jira', 'React Native', 'React.js', 'Redux Thunk', 'Redux.js', 'TypeScript', 'Xcode'],
   },
   {
     org: 'COMMSCOPE',
@@ -70,7 +70,7 @@ export const experience: Experience[] = [
     summary: [
       'I work with a large, global agile team on TV set-top boxes for a major IPTV and broadcasting company in Australia. Utilising a bespoke JavaScript framework to develop and refactor the user interface codebase to enhance the user experience for our customers.',
     ],
-    skills: ['JavaScript', 'CSS'],
+    skills: ['Agile', 'Set Top Box UI/UX', 'CSS', 'JavaScript', 'PowerShell', 'SSH'],
   },
   {
     org: 'LA FOSSE ACADEMY',
@@ -81,7 +81,7 @@ export const experience: Experience[] = [
     summary: [
       'Certificate of Course Completion at futureproof. This certificate confirms that I have completed my 13-week intensive training at futureproof where I studied the main areas of web development, including JavaScript, HTML/CSS, Databases, and Python and applied that knowledge to our group projects to make great software that follows best practice.',
     ],
-    skills: ['Software Development', 'Agile Methodologies', 'JavaScript', 'HTML/CSS', 'Python'],
+    skills: ['Software Development', 'Agile Methodologies', 'JavaScript', 'Web Development', 'Visual Studio'],
   },
   {
     org: 'LA FOSSE ACADEMY',
@@ -94,16 +94,7 @@ export const experience: Experience[] = [
       'Through this experience, I gained demonstrative experience with web development using languages like JavaScript, HTML/CSS, and Python, as well as databases like PostgreSQL and MongoDB. I also used testing suites like Jest, pytest, and Enzyme across multiple coding languages during my projects.',
       'In addition, I worked within a group to produce a total of 4 projects using industry-standard coding and project management practices. This included working as part of a team to ensure that deadlines were met to a professional standard. Overall, this role provided me with the experience and skills necessary to start my career in the tech industry.',
     ],
-    skills: [
-      'JavaScript',
-      'HTML/CSS',
-      'Python',
-      'PostgreSQL',
-      'MongoDB',
-      'Jest',
-      'pytest',
-      'Enzyme',
-    ],
+    skills: ['JavaScript', 'HTML/CSS', 'Python', 'Express.js', 'Flask', 'PostgreSQL', 'MongoDB', 'Jest', 'pytest', 'Enzyme', 'React Native', 'Netlify', 'GitHub', 'HCI'],
   },
   {
     org: 'BT',
@@ -131,7 +122,7 @@ export const experience: Experience[] = [
     start: '2020-01',
     end: '2021-06',
     location: 'ACCRINGTON, UK · REMOTE',
-    skills: ['Problem Solving', 'Microsoft Excel'],
+    skills: ['Problem Solving', 'Microsoft Excel', 'Microsoft Office', 'Spreadsheets'],
   },
   {
     org: 'BT',
