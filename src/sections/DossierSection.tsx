@@ -2,7 +2,7 @@ import { Fragment, useRef, useState } from 'react';
 import { HudModal } from '@/components/hud/HudModal';
 import { Panel } from '@/components/hud/Panel';
 import { SectionHeading } from '@/components/hud/SectionHeading';
-import { bio, education, experience, operative, signoff } from '@/data/portfolio';
+import { associates, bio, education, experience, operative, signoff } from '@/data/portfolio';
 import { useOnScreen } from '@/hooks/useOnScreen';
 import { clipPaths, colors } from '@/lib/tokens';
 import type { Experience } from '@/types';
@@ -12,7 +12,7 @@ import type { Experience } from '@/types';
  * associates panels.
  *
  * @remarks
- * Content is sourced from `bio`, `operative`, and `signoff` exports of
+ * Content is sourced from `bio`, `operative`, `associates`, and `signoff` exports of
  * `@/data/portfolio`. The `SectionHeading` scramble animation is gated on an
  * `IntersectionObserver` trigger via {@link useOnScreen}, so the heading only
  * plays once the section scrolls into view.
@@ -71,16 +71,27 @@ export function DossierSection() {
               </dl>
             </Panel>
 
-            <Panel label="KNOWN ASSOCIATES" variant="cyan">
-              <div className="font-body text-sm" style={{ color: colors.ink }}>
-                Weekly TTRPG cohort ·{' '}
-                <span style={{ color: colors.halo }}>Pathfinder 2e and Gumshoe</span>
-              </div>
-              <div className="mt-2 font-body text-sm" style={{ color: colors.ink }}>
-                Reading dossier ·{' '}
-                <span style={{ color: colors.halo }}>The Expanse, Halo, Warhammer 40k</span>
-              </div>
-            </Panel>
+            {associates.length > 0 && (
+              <Panel label="KNOWN ASSOCIATES" variant="cyan">
+                <div className="space-y-2">
+                  {associates.map(({ label, detail }) => (
+                    <div
+                      key={`${label}-${detail}`}
+                      className="font-body text-sm"
+                      style={{ color: colors.ink }}
+                    >
+                      {label}
+                      {detail && (
+                        <>
+                          {' · '}
+                          <span style={{ color: colors.halo }}>{detail}</span>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            )}
           </div>
         </div>
 

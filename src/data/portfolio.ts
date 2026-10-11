@@ -1,4 +1,4 @@
-import type { Experience, Operative, Project } from '@/types';
+import type { Associate, Experience, Operative, Project } from '@/types';
 import educationData from '../content/education.json';
 import experienceData from '../content/experience.json';
 import profileData from '../content/profile.json';
@@ -126,6 +126,19 @@ export const operative: Operative = {
  * Long-form bio paragraph rendered in {@link DossierSection}.
  */
 export const bio = str(profile.bio, 'profile.json#bio');
+
+/**
+ * Rows of the KNOWN ASSOCIATES panel in {@link DossierSection}, in display
+ * order. A missing or empty list hides the panel.
+ */
+export const associates: Associate[] = (
+  profile.associates == null ? [] : arr(profile.associates, 'profile.json#associates')
+).map((value, i) => {
+  const path = `profile.json#associates[${i}]`;
+  const a = obj(value, path);
+  const detail = optStr(a.detail, `${path}.detail`);
+  return { label: str(a.label, `${path}.label`), ...(detail ? { detail } : {}) };
+});
 
 /**
  * Employment and training history rendered as the SERVICE RECORD timeline in

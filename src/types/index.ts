@@ -27,6 +27,16 @@ export interface Operative {
 }
 
 /**
+ * One row in the KNOWN ASSOCIATES panel rendered by `DossierSection`.
+ */
+export interface Associate {
+  /** Leading label (e.g. `'Weekly TTRPG cohort'`). */
+  label: string;
+  /** Highlighted detail after the label; omitted renders the label alone. */
+  detail?: string;
+}
+
+/**
  * One role in the SERVICE RECORD timeline rendered by `DossierSection`.
  */
 export interface Experience {

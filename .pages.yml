@@ -62,6 +62,21 @@ content:
         label: Bio
         type: text
         required: true
+      - name: associates
+        label: Known associates
+        type: object
+        list: true
+        description: Rows in the dossier's KNOWN ASSOCIATES panel, rendered in this order.
+        fields:
+          - name: label
+            label: Label
+            type: string
+            required: true
+            description: "e.g. Weekly TTRPG cohort"
+          - name: detail
+            label: Detail
+            type: string
+            description: "Highlighted text after the label, e.g. Pathfinder 2e and Gumshoe. Leave blank to show only the label."
       - name: signoff
         label: Sign-off banner
         type: string
