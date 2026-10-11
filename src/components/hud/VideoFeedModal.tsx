@@ -162,10 +162,13 @@ export function VideoFeedModal({ project, onClose }: VideoFeedModalProps) {
       eyebrow="// RECONNAISSANCE FEED"
       closeLabel="Close feed"
       onClose={onClose}
-      // Smaller of 640px and the width that lets the 16:9 video plus
-      // header/controls/padding (~200px measured chrome) fit within 100dvh,
-      // so short/landscape tablets shrink horizontally instead of overflowing.
-      maxWidth="min(640px, calc((100dvh - 200px) * 16 / 9))"
+      // Grows with the viewport (72vw, floored at 640px and capped at 1600px)
+      // so the feed isn't a postage stamp on large displays, but never wider
+      // than the width that lets the 16:9 video plus header/controls/padding
+      // (~200px measured chrome) fit within 100dvh — short/landscape screens
+      // shrink horizontally instead of overflowing. Narrow viewports are
+      // bounded by HudModal's `w-full` regardless of the 640px floor.
+      maxWidth="min(max(640px, 72vw), 1600px, calc((100dvh - 200px) * 16 / 9))"
       heading={
         <div className="flex items-baseline gap-2 flex-wrap">
           <span className="font-mono-tech" style={{ color: colors.muted, fontSize: 11 }}>
