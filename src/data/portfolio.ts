@@ -292,5 +292,5 @@ export const projects: Project[] = projectsData;
 export const socials = {
   github: 'https://github.com/TheWeion',
   linkedin: 'https://www.linkedin.com/in/terryfallows/',
-  email: 'mailto:ianterryfallows@gmail.com',
+  email: 'mailto:terry@weion.dev',
 } as const;
