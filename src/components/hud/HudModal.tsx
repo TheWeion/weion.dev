@@ -51,6 +51,11 @@ interface HudModalProps {
  * focusables), the close button receives initial focus, and focus is restored
  * to whatever element triggered the open when the modal closes.
  *
+ * The frame is capped at the viewport height (minus the backdrop padding)
+ * with the header pinned; everything passed as `children` scrolls as one
+ * region, so tall content on short phones (e.g. iPhone SE) never clips the
+ * header or footer sections off-screen.
+ *
  * Shared by {@link VideoFeedModal} and the dossier's service-record modal.
  *
  * @example
@@ -157,7 +162,7 @@ export function HudModal({
         <CornerBrackets color={colors.amber} size={18} />
 
         <div
-          className="relative"
+          className="relative flex flex-col max-h-[calc(100dvh-2rem)]"
           style={{
             background: 'linear-gradient(135deg, rgba(11,30,46,0.92) 0%, rgba(19,44,63,0.88) 100%)',
             border: `1px solid ${colors.amber}`,
@@ -165,13 +170,13 @@ export function HudModal({
           }}
         >
           <div
-            className="flex items-start justify-between gap-3 px-4 py-3 border-b"
+            className="shrink-0 flex items-start justify-between gap-3 px-4 py-3 lg:px-6 lg:py-4 border-b"
             style={{ borderColor: colors.line }}
           >
             <div className="min-w-0">
               <div
-                className="font-body font-semibold uppercase mb-1"
-                style={{ color: colors.amber, fontSize: 10, letterSpacing: '0.3em' }}
+                className="font-body font-semibold uppercase mb-1 text-[10px] lg:text-xs"
+                style={{ color: colors.amber, letterSpacing: '0.3em' }}
               >
                 {eyebrow}
               </div>
@@ -189,7 +194,8 @@ export function HudModal({
             </button>
           </div>
 
-          {children}
+          {/* Body scrolls under the pinned header when it outgrows the viewport */}
+          <div className="min-h-0 overflow-y-auto overscroll-contain">{children}</div>
         </div>
       </div>
     </div>,

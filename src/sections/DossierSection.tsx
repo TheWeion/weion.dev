@@ -159,28 +159,35 @@ function RecordModal({ entry, onClose }: { entry: Experience; onClose: () => voi
       eyebrow="// PERSONNEL RECORD"
       closeLabel="Close record"
       onClose={onClose}
+      maxWidth="clamp(640px, 55vw, 1000px)"
       heading={
-        <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="font-mono-tech" style={{ color: colors.muted, fontSize: 11 }}>
+        <div className="flex items-baseline gap-2 lg:gap-3 flex-wrap">
+          <span
+            className="font-mono-tech text-[11px] lg:text-xs 2xl:text-sm"
+            style={{ color: colors.muted }}
+          >
             {fmtDate(entry.start)} — {fmtDate(entry.end)}
           </span>
           <span style={{ color: colors.line }}>|</span>
           <span
-            className="font-display font-bold tracking-wide"
-            style={{ color: colors.bright, fontSize: '1.1rem' }}
+            className="font-display font-bold tracking-wide text-[1.1rem] lg:text-xl 2xl:text-2xl"
+            style={{ color: colors.bright }}
           >
             {entry.role}
           </span>
-          <span className="font-mono-tech" style={{ color: colors.muted, fontSize: 10 }}>
+          <span
+            className="font-mono-tech text-[10px] lg:text-xs 2xl:text-sm"
+            style={{ color: colors.muted }}
+          >
             · {entry.org}
           </span>
         </div>
       }
     >
-      <div className="relative px-4 py-4 max-h-[60dvh] overflow-y-auto space-y-4">
+      <div className="relative px-4 py-4 lg:px-6 lg:py-5 space-y-4 lg:space-y-5">
         {entry.location && (
           <div
-            className="font-mono-tech text-xs"
+            className="font-mono-tech text-xs lg:text-sm"
             style={{ color: colors.halo, letterSpacing: '0.15em' }}
           >
             <span style={{ color: colors.amber }}>&gt; </span>
@@ -190,23 +197,23 @@ function RecordModal({ entry, onClose }: { entry: Experience; onClose: () => voi
         {entry.summary?.map((paragraph) => (
           <p
             key={paragraph}
-            className="font-body text-base leading-relaxed"
+            className="font-body text-base lg:text-lg 2xl:text-xl leading-relaxed"
             style={{ color: colors.ink }}
           >
             {paragraph}
           </p>
         ))}
         {!entry.summary && (
-          <p className="font-mono-tech text-xs" style={{ color: colors.muted }}>
+          <p className="font-mono-tech text-xs lg:text-sm" style={{ color: colors.muted }}>
             NO FURTHER DETAIL ON FILE.
           </p>
         )}
       </div>
       {entry.skills && entry.skills.length > 0 && (
-        <div className="px-4 py-3 border-t" style={{ borderColor: colors.line }}>
+        <div className="px-4 py-3 lg:px-6 lg:py-4 border-t" style={{ borderColor: colors.line }}>
           <div
-            className="font-body font-semibold uppercase mb-2"
-            style={{ color: colors.amber, fontSize: 10, letterSpacing: '0.3em' }}
+            className="font-body font-semibold uppercase mb-2 lg:mb-3 text-[10px] lg:text-xs"
+            style={{ color: colors.amber, letterSpacing: '0.3em' }}
           >
             // SKILLS ACQUIRED
           </div>
@@ -214,9 +221,8 @@ function RecordModal({ entry, onClose }: { entry: Experience; onClose: () => voi
             {entry.skills.map((skill) => (
               <span
                 key={skill}
-                className="px-3 py-1.5 font-body font-semibold uppercase"
+                className="px-3 py-1.5 lg:px-4 lg:py-2 font-body font-semibold uppercase text-[11px] lg:text-[13px] 2xl:text-sm"
                 style={{
-                  fontSize: 11,
                   letterSpacing: '0.15em',
                   background: 'rgba(245,166,35,0.1)',
                   border: `1px solid ${colors.amber}`,
