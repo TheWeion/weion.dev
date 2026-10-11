@@ -50,7 +50,7 @@ export interface Experience {
  * A single archive entry rendered as a card in `ArchiveSection`.
  *
  * @remarks
- * Items are sourced from `src/data/projects.json`
+ * Items are sourced from `src/content/projects.json` (edited via Pages CMS)
  * Empty-string values are treated as "absent" and the
  * corresponding link/badge is omitted at render.
  */

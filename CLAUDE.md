@@ -64,7 +64,8 @@ If you change the placeholder visual, keep it close to the React-rendered BootSe
 - `src/components/SceneErrorBoundary.tsx` — class-component error boundary scoped to the lazy `HudScene` mount. Catches WebGL/postprocessing failures (older Intel iGPUs, blocked hardware acceleration, lost context) so they degrade to "no 3D background" rather than unmounting the whole React tree.
 - `src/sections/` — one file per scrollable page section; these compose `hud/` primitives with data from `src/data/portfolio.ts`.
 - `src/hooks/` — `useClock` (live UTC/local time ticker for the chrome), `useOnScreen` (IntersectionObserver), `usePrefersReducedMotion`, `useSignalStrength` (network-quality signal-strength bar driven by `navigator.connection`), `useWakatime` (runtime fetch of WakaTime share-chart JSON, with hex→sci-fi palette mapping).
-- `src/data/portfolio.ts` — single source of truth for all content (operative profile, bio, skills, projects, socials). Edit content here rather than in section components.
+- `src/content/*.json` — all site content (profile/bio/socials, experience, education, skills, projects), edited through **Pages CMS** (`.pages.yml` at the repo root; edits at app.pagescms.org commit straight to the repo and trigger a Netlify rebuild). Excluded from Biome so CMS-written formatting doesn't fail `yarn check`. If you add or rename a field, update `.pages.yml`, the type in `src/types`, and the normalizer in `portfolio.ts` together.
+- `src/data/portfolio.ts` — the typed layer over `src/content/`. Validates and normalizes the CMS output (blank strings → absent, blank `end` → `null`, half-filled `preview` rejected) and throws at module load on malformed content, which fails `yarn build` because `vite.config.ts` imports it. Sections import from here, never from the JSON directly. Its JSON imports are relative (`../content/...`), not `@/`, because Vite loads the config before the alias applies.
 
 ### Design tokens
 

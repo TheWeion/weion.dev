@@ -7,7 +7,15 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/dist", "!**/.vite", "!assets", "!package-lock.json", "!**/*.css"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/.vite",
+      "!assets",
+      "!package-lock.json",
+      "!**/*.css",
+      "!src/content"
+    ]
   },
   "formatter": {
     "enabled": true,
