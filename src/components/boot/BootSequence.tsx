@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { ScrambleText } from '@/components/text/ScrambleText';
 import { colors } from '@/lib/tokens';
 
@@ -74,19 +74,27 @@ export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
     [],
   );
 
-  const [visible, setVisible] = useState<BootLine[]>([]);
+  // Count rather than an appended list so a re-run of the reveal timers can't
+  // duplicate lines.
+  const [shown, setShown] = useState(0);
+  const visible = lines.slice(0, shown);
   const [fading, setFading] = useState(false);
   const [done, setDone] = useState(false);
+
+  // Read the latest `onComplete` without making it an effect dependency —
+  // callers pass inline arrows, and re-running the effect would restart the
+  // boot timers on every parent render.
+  const complete = useEffectEvent(() => onComplete());
 
   useEffect(() => {
     if (skip) {
       setDone(true);
-      onComplete();
+      complete();
       return;
     }
 
-    const revealTimers = lines.map((line) =>
-      window.setTimeout(() => setVisible((current) => [...current, line]), line.delay),
+    const revealTimers = lines.map((line, i) =>
+      window.setTimeout(() => setShown((current) => Math.max(current, i + 1)), line.delay),
     );
     // Fire onComplete + release the scroll lock at the same instant we start
     // glitching out — <main> begins its glitch-in animation in parallel
@@ -98,14 +106,14 @@ export function BootSequence({ onComplete, skip = false }: BootSequenceProps) {
     const fadeTimer = window.setTimeout(() => {
       setFading(true);
       setDone(true);
-      onComplete();
+      complete();
     }, 2000);
 
     return () => {
       for (const id of revealTimers) window.clearTimeout(id);
       window.clearTimeout(fadeTimer);
     };
-  }, [lines, onComplete, skip]);
+  }, [lines, skip]);
 
   // Body scroll is locked from index.html so the page can't scroll behind
   // the placeholder before React mounts. Release it once the overlay is gone
