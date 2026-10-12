@@ -4,6 +4,7 @@ import { AngularButton } from '@/components/hud/AngularButton';
 import { HologramPortrait } from '@/components/hud/HologramPortrait';
 import { GlitchText } from '@/components/text/GlitchText';
 import { operative, socials } from '@/data/portfolio';
+import { formatUtcOffset } from '@/lib/timezone';
 import { colors } from '@/lib/tokens';
 
 /**
@@ -18,9 +19,15 @@ interface StatTile {
   value: string;
 }
 
-const stats: StatTile[] = [
+// Built per render (not at module load) so the TIMEZONE offset reflects
+// daylight saving at the time the section mounts.
+const buildStats = (): StatTile[] => [
   { icon: <Cpu size={12} aria-hidden />, label: 'STATUS', value: operative.status },
-  { icon: <Radio size={12} aria-hidden />, label: 'TIMEZONE', value: operative.timezone },
+  {
+    icon: <Radio size={12} aria-hidden />,
+    label: 'TIMEZONE',
+    value: formatUtcOffset(operative.timezone),
+  },
   { icon: <Zap size={12} aria-hidden />, label: 'FOCUS', value: 'Android & iOS' },
 ];
 
@@ -106,7 +113,7 @@ export function HeroSection() {
             </div>
 
             <div className="mt-10 grid grid-cols-3 gap-3 max-w-md">
-              {stats.map((stat) => (
+              {buildStats().map((stat) => (
                 <div
                   key={stat.label}
                   className="px-3 py-2 border font-body font-semibold uppercase"

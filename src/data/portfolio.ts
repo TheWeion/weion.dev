@@ -4,6 +4,7 @@ import experienceData from '../content/experience.json';
 import profileData from '../content/profile.json';
 import projectsData from '../content/projects.json';
 import skillsData from '../content/skills.json';
+import { isValidTimeZone } from '../lib/timezone';
 
 // Content lives in `src/content/*.json` and is edited through Pages CMS
 // (`.pages.yml`). The CMS writes whatever the form holds — empty strings for
@@ -61,9 +62,18 @@ function strList(value: unknown, path: string): string[] {
  * leading `mailto:` is tolerated so older content keeps working.
  */
 function mailto(value: unknown, path: string): string {
-  const address = str(value, path).trim().replace(/^mailto:/i, '');
+  const address = str(value, path)
+    .trim()
+    .replace(/^mailto:/i, '');
   if (!/^[^\s@]+@[^\s@]+$/.test(address)) fail(path, `an email address, got "${address}"`);
   return `mailto:${address}`;
+}
+
+/** IANA timezone name, validated against the build runtime's `Intl` data. */
+function timeZone(value: unknown, path: string): string {
+  const zone = str(value, path).trim();
+  if (!isValidTimeZone(zone)) fail(path, `an IANA timezone (e.g. Europe/London), got "${zone}"`);
+  return zone;
 }
 
 const DATE_RE = /^\d{4}(-(0[1-9]|1[0-2]))?$/;
@@ -127,7 +137,7 @@ export const operative: Operative = {
   role: str(operativeData.role, 'profile.json#operative.role'),
   affiliation: optStr(operativeData.affiliation, 'profile.json#operative.affiliation') ?? null,
   location: str(operativeData.location, 'profile.json#operative.location'),
-  timezone: str(operativeData.timezone, 'profile.json#operative.timezone'),
+  timezone: timeZone(operativeData.timezone, 'profile.json#operative.timezone'),
   status: str(operativeData.status, 'profile.json#operative.status'),
   tagline: str(operativeData.tagline, 'profile.json#operative.tagline'),
 };

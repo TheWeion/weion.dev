@@ -18,7 +18,10 @@ export interface Operative {
   affiliation: string | null;
   /** Geographic locator string in HUD format (e.g. `'EARTH // SOL SYSTEM'`). */
   location: string;
-  /** IANA-ish timezone offset rendered in the chrome (e.g. `'UTC+01:00'`). */
+  /**
+   * IANA timezone name (e.g. `'Europe/London'`). Rendered as its live UTC
+   * offset via `formatUtcOffset`, so daylight saving is applied automatically.
+   */
   timezone: string;
   /** Operational status badge text (e.g. `'ACTIVE'`, `'STANDBY'`). */
   status: string;

@@ -1,6 +1,8 @@
 import { Activity, Radio, Shield } from 'lucide-react';
+import { operative } from '@/data/portfolio';
 import { useClock } from '@/hooks/useClock';
 import { useSignalStrength } from '@/hooks/useSignalStrength';
+import { formatZonedTimestamp } from '@/lib/timezone';
 import { colors } from '@/lib/tokens';
 
 /**
@@ -13,8 +15,9 @@ import { colors } from '@/lib/tokens';
  * events for itself. The right-hand telemetry block is hidden below the
  * `md` breakpoint to avoid wrapping at narrow widths.
  *
- * Live values come from {@link useClock} (UTC ISO timestamp, ticking once
- * per second) and {@link useSignalStrength} (decorative integer that drifts
+ * Live values come from {@link useClock} (ticking once per second, rendered
+ * as wall-clock time in the CMS-set `operative.timezone` via
+ * {@link formatZonedTimestamp}) and {@link useSignalStrength} (decorative integer that drifts
  * around 90–100). The signal text is left-padded with whitespace so that
  * "98" and "100" reserve the same column width — preventing the indicator
  * from jittering each tick.
@@ -27,7 +30,7 @@ import { colors } from '@/lib/tokens';
  */
 export function TopChrome() {
   const now = useClock();
-  const timestamp = `${now.toISOString().replace('T', ' ').slice(0, 19)}Z`;
+  const timestamp = formatZonedTimestamp(operative.timezone, now);
   // Pad with non-breaking spaces so "98" and "100" reserve the same column
   // width — nbsp keeps the preceding space from collapsing.
   const signalText = String(useSignalStrength()).padStart(3, ' ');

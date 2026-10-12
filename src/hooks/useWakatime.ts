@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { userLocales } from '@/lib/locale';
 import { colors } from '@/lib/tokens';
 import type { TelemetryBar, TelemetryHeatmapDay } from '@/types';
 
@@ -227,8 +228,12 @@ function formatBestDay(iso: string): string {
   if (!iso) return '—';
   const d = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(d.getTime())) return '—';
-  const month = d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase();
-  return `${month} ${String(d.getUTCDate()).padStart(2, '0')}`;
+  // Day/month order and month names follow the visitor's locale
+  // (`12 OCT`, `OCT 12`, `12. OKT.`); uppercased to match the HUD type.
+  const locales = userLocales();
+  return d
+    .toLocaleDateString(locales, { day: '2-digit', month: 'short', timeZone: 'UTC' })
+    .toLocaleUpperCase(locales);
 }
 
 /**

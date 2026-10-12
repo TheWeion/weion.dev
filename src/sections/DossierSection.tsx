@@ -4,6 +4,7 @@ import { Panel } from '@/components/hud/Panel';
 import { SectionHeading } from '@/components/hud/SectionHeading';
 import { associates, bio, education, experience, operative, signoff } from '@/data/portfolio';
 import { useOnScreen } from '@/hooks/useOnScreen';
+import { formatUtcOffset } from '@/lib/timezone';
 import { clipPaths, colors } from '@/lib/tokens';
 import type { Experience } from '@/types';
 
@@ -27,7 +28,7 @@ export function DossierSection() {
       ? [['AFFILIATION', operative.affiliation] as [string, string]]
       : []),
     ['SECTOR', operative.location],
-    ['TZ', operative.timezone],
+    ['TZ', `${formatUtcOffset(operative.timezone)} · ${operative.timezone.toUpperCase()}`],
     ['STATUS', operative.status],
   ];
 
