@@ -1,9 +1,11 @@
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, type Plugin } from 'vite';
 import { operative } from './src/data/portfolio';
+import { birthdayDigestInput, parseBirthday } from './src/lib/birthday';
 
 // Fills %META_TITLE% / %META_DESCRIPTION% in index.html from `operative`, so
 // <title>, description, and og:* tags share portfolio.ts as source of truth.
@@ -18,6 +20,16 @@ function operativeMeta(): Plugin {
       html.replaceAll('%META_TITLE%', title).replaceAll('%META_DESCRIPTION%', description),
   };
 }
+
+// Salted SHA-256 of the birthday's month-day, read from the OPERATIVE_DOB
+// build env var (set in Netlify, never committed — the repo is public). Only
+// the digest reaches the bundle; useBirthday() hashes today and compares.
+const dob = process.env.OPERATIVE_DOB?.trim();
+const birthdayHash = dob
+  ? createHash('sha256')
+      .update(birthdayDigestInput(parseBirthday(dob)))
+      .digest('hex')
+  : null;
 
 // Injects <link rel="preload" as="font"> tags for the woff2 files that show
 // up first paint (body copy + primary headings). With self-hosted fonts the
@@ -92,6 +104,9 @@ export default defineConfig({
       brotliSize: true,
     }),
   ],
+  define: {
+    __BIRTHDAY_HASH__: JSON.stringify(birthdayHash),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

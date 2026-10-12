@@ -101,6 +101,12 @@ Netlify, configured in `netlify.toml`:
 - `weion.netlify.app` 301s to `https://weion.dev`. There is also a SPA-style `public/_redirects`.
 - `/assets/*` is served with a 1-year immutable cache, so Vite's hashed asset filenames must not be bypassed.
 
+### Birthday easter egg
+
+- `OPERATIVE_DOB` (Netlify build env var, `YYYY-MM-DD` or `MM-DD`) enables birthday effects on `HologramPortrait` — cycling amber/magenta/cyan tint, a holographic party hat parented to the portrait mesh (anchored via `HAT_ANCHOR` in texture UVs — update it if `hero-hologram.webp` changes), confetti, and a relabelled HUD strip. It is deliberately **not** in the CMS: the repo is public and Pages CMS commits fields into `src/content/`.
+- `vite.config.ts` hashes only the month-day (salted SHA-256 via `birthdayDigestInput` in `src/lib/birthday.ts`) into the `__BIRTHDAY_HASH__` define; the raw date never reaches the bundle. `useBirthday` hashes today's date in `operative.timezone` and compares. Unset → feature off. Malformed → build fails. 366 possible inputs means this is obfuscation, not secrecy.
+- Local testing: `OPERATIVE_DOB=MM-DD yarn dev` with today's date, or append `?birthday` in dev.
+
 ### WakaTime integration
 
 - `src/hooks/useWakatime.ts` fetches three WakaTime share-chart JSON paths in parallel on mount of `TelemetrySection`, via the same-origin proxy at `/api/wakatime/share/@Weion/<uuid>.json`:
