@@ -101,11 +101,12 @@ Netlify, configured in `netlify.toml`:
 - `weion.netlify.app` 301s to `https://weion.dev`. There is also a SPA-style `public/_redirects`.
 - `/assets/*` is served with a 1-year immutable cache, so Vite's hashed asset filenames must not be bypassed.
 
-### Birthday easter egg
+### Occasion easter eggs
 
-- `OPERATIVE_DOB` (Netlify build env var, `YYYY-MM-DD` or `MM-DD`) enables birthday effects on `HologramPortrait` — cycling amber/magenta/cyan tint, a holographic party hat parented to the portrait mesh (anchored via `HAT_ANCHOR` in texture UVs — update it if `hero-hologram.webp` changes), confetti, and a relabelled HUD strip. It is deliberately **not** in the CMS: the repo is public and Pages CMS commits fields into `src/content/`.
-- `vite.config.ts` hashes only the month-day (salted SHA-256 via `birthdayDigestInput` in `src/lib/birthday.ts`) into the `__BIRTHDAY_HASH__` define; the raw date never reaches the bundle. `useBirthday` hashes today's date in `operative.timezone` and compares. Unset → feature off. Malformed → build fails. 366 possible inputs means this is obfuscation, not secrecy.
-- Local testing: `OPERATIVE_DOB=MM-DD yarn dev` with today's date, or append `?birthday` in dev.
+- `HologramPortrait` re-themes on calendar occasions via `useOccasion` (`src/hooks/useOccasion.ts`): birthday, Easter (Good Friday–Easter Monday, computed per year), Halloween (25–31 Oct), Christmas (20–26 Dec). Windows live in `src/lib/occasions.ts`; dates resolve in `operative.timezone`; the birthday wins on overlap. Everything runs client-side with no network requests and re-checks once a minute so the theme flips at midnight.
+- Visuals are in `src/components/hud/hologramOccasions.tsx`: `OCCASION_THEMES` (tint palette, accent, label strip, particle config), `OccasionProp` (party / witch / Santa hat anchored via `HAT_ANCHOR` in texture UVs — update it if `hero-hologram.webp` changes — or an orbiting Easter egg), and `OccasionParticles`. Props are children of the portrait mesh so they sway with the head. Occasion colours are local constants, not design tokens. Prop palettes must stay module-level constants: `HoloSurface` memoizes uniforms on palette identity, and its uniforms are driven through `matRef` because R3F doesn't preserve the `uniforms` prop's identity.
+- The birthday comes from `OPERATIVE_DOB` (Netlify build env var, `YYYY-MM-DD` or `MM-DD`; set it as a secret using the full `YYYY-MM-DD` so secret scanning can't false-positive on short `MM-DD` strings in the bundle). It is deliberately **not** in the CMS: the repo is public and Pages CMS commits fields into `src/content/`. `vite.config.ts` hashes only the month-day (salted SHA-256 via `birthdayDigestInput` in `src/lib/birthday.ts`) into the `__BIRTHDAY_HASH__` define; the raw date never reaches the bundle. Unset → no birthday. Malformed → build fails. 366 possible inputs means this is obfuscation, not secrecy.
+- Dev preview: append `?occasion=birthday|easter|halloween|christmas`.
 
 ### WakaTime integration
 

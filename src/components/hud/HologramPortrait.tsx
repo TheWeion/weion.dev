@@ -1,22 +1,21 @@
 import { useTexture } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { Suspense, useLayoutEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef } from 'react';
 import {
   AdditiveBlending,
   Color,
   DoubleSide,
-  type Group,
-  type InstancedMesh,
   type Mesh,
-  Object3D,
   type ShaderMaterial,
   type Texture,
 } from 'three';
-import { useBirthday } from '@/hooks/useBirthday';
+import { useOccasion } from '@/hooks/useOccasion';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import type { Occasion } from '@/lib/occasions';
 import { colors } from '@/lib/tokens';
 import { CornerBrackets } from './CornerBrackets';
+import { OCCASION_THEMES, OccasionParticles, OccasionProp } from './hologramOccasions';
 
 const vertexShader = /* glsl */ `
   uniform sampler2D uMap;
@@ -52,29 +51,29 @@ const fragmentShader = /* glsl */ `
   uniform float uScanlineSize;
   uniform float uSignalSpeed;
   uniform float uFresnelAmount;
-  uniform float uParty;
-  uniform vec3 uPartyA;
-  uniform vec3 uPartyB;
-  uniform vec3 uPartyC;
+  uniform float uOccasion;
+  uniform vec3 uPaletteA;
+  uniform vec3 uPaletteB;
+  uniform vec3 uPaletteC;
 
   varying vec2 vUv;
   varying vec3 vWorldNormal;
   varying vec3 vViewDir;
   varying float vDisplacement;
 
-  // Cyclic amber -> magenta -> cyan gradient for the birthday tint.
-  vec3 partyTint(float t) {
+  // Cyclic three-colour gradient for occasion tints.
+  vec3 occasionTint(float t) {
     t = fract(t) * 3.0;
-    if (t < 1.0) return mix(uPartyA, uPartyB, t);
-    if (t < 2.0) return mix(uPartyB, uPartyC, t - 1.0);
-    return mix(uPartyC, uPartyA, t - 2.0);
+    if (t < 1.0) return mix(uPaletteA, uPaletteB, t);
+    if (t < 2.0) return mix(uPaletteB, uPaletteC, t - 1.0);
+    return mix(uPaletteC, uPaletteA, t - 2.0);
   }
 
   void main() {
     vec4 tex = texture2D(uMap, vUv);
     if (tex.a < 0.02) discard;
 
-    vec3 tint = mix(uTint, partyTint(vUv.y * 0.8 + vUv.x * 0.3 - uTime * 0.15), uParty);
+    vec3 tint = mix(uTint, occasionTint(vUv.y * 0.8 + vUv.x * 0.3 - uTime * 0.15), uOccasion);
 
     vec3 normal = normalize(vWorldNormal);
     if (!gl_FrontFacing) normal = -normal;
@@ -99,10 +98,10 @@ const fragmentShader = /* glsl */ `
 
 interface HologramMeshProps {
   reducedMotion: boolean;
-  birthday: boolean;
+  occasion: Occasion | null;
 }
 
-function HologramMesh({ reducedMotion, birthday }: HologramMeshProps) {
+function HologramMesh({ reducedMotion, occasion }: HologramMeshProps) {
   const meshRef = useRef<Mesh>(null);
   const matRef = useRef<ShaderMaterial>(null);
   const texture = useTexture('/hero-hologram.webp') as Texture;
@@ -124,21 +123,30 @@ function HologramMesh({ reducedMotion, birthday }: HologramMeshProps) {
       uScanlineSize: { value: 180 },
       uSignalSpeed: { value: 0.35 },
       uFresnelAmount: { value: 1.4 },
-      uParty: { value: 0 },
-      uPartyA: { value: new Color(colors.amberHot) },
-      uPartyB: { value: new Color(colors.magenta) },
-      uPartyC: { value: new Color(colors.cyan) },
+      uOccasion: { value: 0 },
+      uPaletteA: { value: new Color() },
+      uPaletteB: { value: new Color() },
+      uPaletteC: { value: new Color() },
     }),
     [texture],
   );
+
+  useEffect(() => {
+    const mat = matRef.current;
+    if (!mat || !occasion) return;
+    const [a, b, c] = OCCASION_THEMES[occasion].palette;
+    mat.uniforms.uPaletteA.value.set(a);
+    mat.uniforms.uPaletteB.value.set(b);
+    mat.uniforms.uPaletteC.value.set(c);
+  }, [occasion]);
 
   useFrame((_, delta) => {
     const mat = matRef.current;
     if (mat) {
       mat.uniforms.uTime.value += delta;
-      // Ease the party tint in/out rather than snapping at midnight.
-      const party = mat.uniforms.uParty;
-      party.value += ((birthday ? 1 : 0) - party.value) * Math.min(1, delta * 2);
+      // Ease the occasion tint in/out rather than snapping at midnight.
+      const mix = mat.uniforms.uOccasion;
+      mix.value += ((occasion ? 1 : 0) - mix.value) * Math.min(1, delta * 2);
     }
     const mesh = meshRef.current;
     if (!mesh || reducedMotion || !mat) return;
@@ -162,185 +170,15 @@ function HologramMesh({ reducedMotion, birthday }: HologramMeshProps) {
         side={DoubleSide}
         blending={AdditiveBlending}
       />
-      {birthday && <PartyHat width={width} height={height} reducedMotion={reducedMotion} />}
-    </mesh>
-  );
-}
-
-const hatVertexShader = /* glsl */ `
-  varying vec2 vUv;
-  varying vec3 vWorldNormal;
-  varying vec3 vViewDir;
-
-  void main() {
-    vUv = uv;
-    vec4 worldPos = modelMatrix * vec4(position, 1.0);
-    vWorldNormal = normalize(mat3(modelMatrix) * normal);
-    vViewDir = normalize(cameraPosition - worldPos.xyz);
-    gl_Position = projectionMatrix * viewMatrix * worldPos;
-  }
-`;
-
-const hatFragmentShader = /* glsl */ `
-  uniform float uTime;
-  uniform float uReveal;
-  uniform vec3 uStripeA;
-  uniform vec3 uStripeB;
-  uniform vec3 uStripeC;
-
-  varying vec2 vUv;
-  varying vec3 vWorldNormal;
-  varying vec3 vViewDir;
-
-  void main() {
-    // Spiral candy-stripes that slowly wind up the cone.
-    float band = floor(fract(vUv.y * 3.0 + vUv.x * 2.0 - uTime * 0.2) * 3.0);
-    vec3 col = band < 1.0 ? uStripeA : band < 2.0 ? uStripeB : uStripeC;
-
-    vec3 normal = normalize(vWorldNormal);
-    if (!gl_FrontFacing) normal = -normal;
-    float fresnel = pow(1.0 - max(dot(normal, vViewDir), 0.0), 1.4);
-
-    // Same scrolling scanlines as the portrait so the hat reads as part of
-    // the projection rather than a solid prop.
-    float stripes = fract(vUv.y * 60.0 - uTime * 0.35);
-    stripes = 0.7 + 0.3 * pow(stripes, 2.5);
-
-    vec3 base = (col * 0.6 + col * fresnel * 1.2) * stripes;
-    gl_FragColor = vec4(base, (0.55 + fresnel * 0.4) * uReveal);
-  }
-`;
-
-/**
- * Where the hat sits on the portrait texture, in UV space from the top-left:
- * the hair tuft between the ears of `/hero-hologram.webp`. Update if the
- * portrait image changes.
- */
-const HAT_ANCHOR = { u: 0.5, v: 0.375 };
-const HAT_HEIGHT = 0.58;
-const HAT_RADIUS = 0.22;
-
-interface PartyHatProps {
-  width: number;
-  height: number;
-  reducedMotion: boolean;
-}
-
-/**
- * Holographic party hat, rendered as a child of the portrait mesh so it
- * inherits the pendulum sway and float and stays planted on the head.
- */
-function PartyHat({ width, height, reducedMotion }: PartyHatProps) {
-  const groupRef = useRef<Group>(null);
-  const matRef = useRef<ShaderMaterial>(null);
-  const uniforms = useMemo(
-    () => ({
-      uTime: { value: 0 },
-      uReveal: { value: reducedMotion ? 1 : 0 },
-      uStripeA: { value: new Color(colors.magenta) },
-      uStripeB: { value: new Color(colors.amberHot) },
-      uStripeC: { value: new Color(colors.cyan) },
-    }),
-    [reducedMotion],
-  );
-
-  useFrame((_, delta) => {
-    const mat = matRef.current;
-    if (!mat) return;
-    mat.uniforms.uTime.value += delta;
-    const reveal = mat.uniforms.uReveal;
-    reveal.value += (1 - reveal.value) * Math.min(1, delta * 2.5);
-    // Materialize by growing up out of the head.
-    groupRef.current?.scale.set(1, reveal.value, 1);
-  });
-
-  return (
-    <group
-      ref={groupRef}
-      position={[(HAT_ANCHOR.u - 0.5) * width, (0.5 - HAT_ANCHOR.v) * height, 0.08]}
-      rotation={[0, 0, -0.12]}
-    >
-      <mesh position={[0, HAT_HEIGHT / 2, 0]}>
-        <coneGeometry args={[HAT_RADIUS, HAT_HEIGHT, 48, 1, true]} />
-        <shaderMaterial
-          ref={matRef}
-          vertexShader={hatVertexShader}
-          fragmentShader={hatFragmentShader}
-          uniforms={uniforms}
-          transparent
-          depthWrite={false}
-          side={DoubleSide}
-          blending={AdditiveBlending}
+      {occasion && (
+        <OccasionProp
+          occasion={occasion}
+          width={width}
+          height={height}
+          reducedMotion={reducedMotion}
         />
-      </mesh>
-      <mesh position={[0, HAT_HEIGHT + 0.03, 0]}>
-        <sphereGeometry args={[0.055, 16, 12]} />
-        <meshBasicMaterial color={colors.amberHot} toneMapped={false} />
-      </mesh>
-    </group>
-  );
-}
-
-const CONFETTI_COUNT = 90;
-const CONFETTI_COLORS = [colors.amberHot, colors.magenta, colors.cyan, colors.ok, colors.bright];
-const CONFETTI_TOP = 1.5;
-const CONFETTI_BOTTOM = -1.5;
-
-/** Falling confetti flakes in front of and behind the portrait on its birthday. */
-function BirthdayConfetti({ reducedMotion }: { reducedMotion: boolean }) {
-  const meshRef = useRef<InstancedMesh>(null);
-  const dummy = useMemo(() => new Object3D(), []);
-  const flakes = useMemo(
-    () =>
-      Array.from({ length: CONFETTI_COUNT }, (_, i) => ({
-        x: (Math.random() * 2 - 1) * 1.3,
-        y: CONFETTI_BOTTOM + Math.random() * (CONFETTI_TOP - CONFETTI_BOTTOM),
-        z: Math.random() * 1.3 - 0.5,
-        speed: 0.25 + Math.random() * 0.3,
-        sway: Math.random() * Math.PI * 2,
-        spin: (Math.random() * 2 - 1) * 4,
-        rx: Math.random() * Math.PI,
-        ry: Math.random() * Math.PI,
-        color: new Color(CONFETTI_COLORS[i % CONFETTI_COLORS.length]),
-      })),
-    [],
-  );
-
-  const place = (mesh: InstancedMesh, t: number) => {
-    flakes.forEach((f, i) => {
-      dummy.position.set(f.x + Math.sin(t * 1.3 + f.sway) * 0.06, f.y, f.z);
-      dummy.rotation.set(f.rx + t * f.spin, f.ry + t * f.spin * 0.7, 0);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-  };
-
-  useLayoutEffect(() => {
-    const mesh = meshRef.current;
-    if (!mesh) return;
-    flakes.forEach((f, i) => {
-      mesh.setColorAt(i, f.color);
-    });
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    place(mesh, 0);
-  });
-
-  useFrame(({ clock }, delta) => {
-    const mesh = meshRef.current;
-    if (!mesh || reducedMotion) return;
-    for (const f of flakes) {
-      f.y -= f.speed * delta;
-      if (f.y < CONFETTI_BOTTOM) f.y += CONFETTI_TOP - CONFETTI_BOTTOM;
-    }
-    place(mesh, clock.elapsedTime);
-  });
-
-  return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, CONFETTI_COUNT]}>
-      <planeGeometry args={[0.045, 0.075]} />
-      <meshBasicMaterial side={DoubleSide} transparent opacity={0.9} toneMapped={false} />
-    </instancedMesh>
+      )}
+    </mesh>
   );
 }
 
@@ -380,11 +218,12 @@ export interface HologramPortraitProps {
  * outside the canvas as sibling DOM, layered above the WebGL output along
  * with the CRT scanline mask and refresh sweep.
  *
- * On the operative's birthday ({@link useBirthday}) the tint cycles through
- * amber / magenta / cyan, a holographic party hat materializes on the head
- * (parented to the portrait mesh so it sways with it), confetti falls through
- * the frame (frozen in place under reduced motion), and the brackets and
- * label strip switch to magenta.
+ * On calendar occasions ({@link useOccasion}) the portrait re-themes per
+ * {@link OCCASION_THEMES}: the tint cycles through the occasion's palette, a
+ * prop is parented to the portrait mesh so it sways with the head (party,
+ * witch, or Santa hat; an orbiting egg at Easter), particles drift through
+ * the frame (confetti, embers, snow, petals — frozen under reduced motion),
+ * and the brackets and label strip take the occasion's accent.
  *
  * @example
  * ```tsx
@@ -393,8 +232,8 @@ export interface HologramPortraitProps {
  */
 export function HologramPortrait({ size = 360 }: HologramPortraitProps) {
   const reducedMotion = usePrefersReducedMotion();
-  const birthday = useBirthday();
-  const accent = birthday ? colors.magenta : colors.amber;
+  const occasion = useOccasion();
+  const theme = occasion ? OCCASION_THEMES[occasion] : null;
 
   return (
     <div
@@ -403,12 +242,10 @@ export function HologramPortrait({ size = 360 }: HologramPortraitProps) {
         width: size,
         height: size,
         border: `1px solid ${colors.line}`,
-        background: birthday
-          ? 'radial-gradient(ellipse at center, rgba(255,0,85,0.1), rgba(5,8,12,0) 70%)'
-          : 'radial-gradient(ellipse at center, rgba(3,216,243,0.08), rgba(5,8,12,0) 70%)',
+        background: `radial-gradient(ellipse at center, ${theme?.glow ?? 'rgba(3,216,243,0.08)'}, rgba(5,8,12,0) 70%)`,
       }}
     >
-      <CornerBrackets color={accent} size={14} />
+      <CornerBrackets color={theme?.accent ?? colors.amber} size={14} />
 
       <div className="absolute inset-0">
         <Canvas
@@ -422,9 +259,9 @@ export function HologramPortrait({ size = 360 }: HologramPortraitProps) {
           camera={{ position: [0, 0, 3.4], fov: 38, near: 0.1, far: 20 }}
         >
           <Suspense fallback={null}>
-            <HologramMesh reducedMotion={reducedMotion} birthday={birthday} />
+            <HologramMesh reducedMotion={reducedMotion} occasion={occasion} />
           </Suspense>
-          {birthday && <BirthdayConfetti reducedMotion={reducedMotion} />}
+          {occasion && <OccasionParticles occasion={occasion} reducedMotion={reducedMotion} />}
           {!reducedMotion && (
             <EffectComposer enableNormalPass={false} multisampling={0}>
               <Bloom
@@ -454,10 +291,10 @@ export function HologramPortrait({ size = 360 }: HologramPortraitProps) {
           background: 'rgba(11,30,46,0.6)',
         }}
       >
-        {birthday ? (
+        {theme ? (
           <>
-            <span style={{ color: colors.magenta }}>SIG // HAPPY BIRTHDAY</span>
-            <span style={{ color: colors.amberHot }}>REL-0.01</span>
+            <span style={{ color: theme.accent }}>{theme.label}</span>
+            <span style={{ color: theme.tagColor }}>{theme.tag}</span>
           </>
         ) : (
           <>
