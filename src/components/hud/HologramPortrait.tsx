@@ -457,7 +457,7 @@ export function HologramPortrait({ size = 360 }: HologramPortraitProps) {
         {birthday ? (
           <>
             <span style={{ color: colors.magenta }}>SIG // HAPPY BIRTHDAY</span>
-            <span style={{ color: colors.amberHot }}>CYCLE +1</span>
+            <span style={{ color: colors.amberHot }}>REL-0.01</span>
           </>
         ) : (
           <>
