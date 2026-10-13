@@ -269,6 +269,105 @@
     }
   }
 
+  /* Short, continuous variant for occasion transitions (GlitchText mode="burst"). */
+  .hud-glitch-text--burst::before {
+    animation: hud-glitch-burst 0.16s infinite steps(2, end);
+    opacity: 0.9;
+  }
+  .hud-glitch-text--burst::after {
+    animation: hud-glitch-burst 0.22s infinite steps(2, end) reverse;
+    opacity: 0.85;
+  }
+  .hud-glitch-text--off::before,
+  .hud-glitch-text--off::after {
+    display: none;
+  }
+  @keyframes hud-glitch-burst {
+    0% {
+      transform: translate(-3px, 0);
+    }
+    25% {
+      transform: translate(3px, 1px);
+    }
+    50% {
+      transform: translate(-1px, -1px);
+    }
+    75% {
+      transform: translate(2px, 0);
+    }
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+
+  /* Occasion swap on the hologram portrait canvas: chromatic split, slice
+     tearing, and dropout, peaking at the midpoint where the content flips.
+     Length matches OCCASION_GLITCH_MS in useOccasionTransition.ts. */
+  .hud-signal-glitch {
+    animation: hud-signal-glitch 900ms steps(1, end);
+  }
+  @keyframes hud-signal-glitch {
+    0% {
+      transform: translate(0, 0);
+      filter: none;
+    }
+    10% {
+      transform: translate(-4px, 0);
+      clip-path: inset(12% 0 58% 0);
+      filter: drop-shadow(4px 0 0 var(--color-magenta)) drop-shadow(-4px 0 0 var(--color-cyan));
+    }
+    18% {
+      transform: translate(5px, 0);
+      clip-path: none;
+      filter: drop-shadow(-3px 0 0 var(--color-magenta)) drop-shadow(3px 0 0 var(--color-cyan));
+    }
+    28% {
+      transform: translate(-2px, 1px);
+      clip-path: inset(40% 0 22% 0);
+      opacity: 0.6;
+    }
+    38% {
+      transform: translate(8px, 0) skewX(-6deg);
+      clip-path: inset(0 0 70% 0);
+      filter: drop-shadow(6px 0 0 var(--color-magenta)) drop-shadow(-6px 0 0 var(--color-cyan))
+        brightness(1.6);
+      opacity: 1;
+    }
+    46% {
+      transform: translate(-6px, 0);
+      clip-path: inset(55% 0 0 0);
+      opacity: 0.25;
+    }
+    54% {
+      transform: translate(3px, -1px) skewX(4deg);
+      clip-path: inset(20% 0 35% 0);
+      filter: drop-shadow(-6px 0 0 var(--color-magenta)) drop-shadow(6px 0 0 var(--color-cyan))
+        brightness(1.4);
+      opacity: 1;
+    }
+    64% {
+      transform: translate(-4px, 0);
+      clip-path: none;
+      opacity: 0.7;
+    }
+    76% {
+      transform: translate(2px, 0);
+      clip-path: inset(66% 0 8% 0);
+      filter: drop-shadow(3px 0 0 var(--color-magenta)) drop-shadow(-3px 0 0 var(--color-cyan));
+      opacity: 1;
+    }
+    88% {
+      transform: translate(-1px, 0);
+      clip-path: none;
+      filter: drop-shadow(-1px 0 0 var(--color-magenta)) drop-shadow(1px 0 0 var(--color-cyan));
+    }
+    100% {
+      transform: translate(0, 0);
+      clip-path: none;
+      filter: none;
+    }
+  }
+
   /* Boot-to-content transition. Two animations that run simultaneously when
      the boot animation completes — the overlay dissolves while <main>
      resolves, both via pure RGB-channel split (no clip-path slicing, no
@@ -473,6 +572,9 @@
   }
   .hud-glitch-text::before,
   .hud-glitch-text::after {
+    animation: none !important;
+  }
+  .hud-signal-glitch {
     animation: none !important;
   }
   /* Reduce-motion users skip BootSequence entirely (see App.tsx), so the

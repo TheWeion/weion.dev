@@ -105,7 +105,7 @@ export default function App() {
       <TopChrome />
 
       <main className={`relative z-10 ${booted ? 'hud-rgb-reveal' : 'opacity-0'}`}>
-        <HeroSection />
+        <HeroSection booted={booted} />
         <DossierSection />
         <CapabilitiesSection />
         <ArchiveSection />

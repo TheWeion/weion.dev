@@ -33,7 +33,8 @@ async function isBirthday(hash: string, today: string): Promise<boolean> {
  * Everything runs locally — no network requests. Re-checks every minute so
  * the theme switches at midnight without a reload.
  *
- * In dev, append `?occasion=<name>` (e.g. `?occasion=halloween`) to force one.
+ * In dev, append `?occasion=<name>` (e.g. `?occasion=halloween`) to force one,
+ * plus `&occasionFor=<seconds>` to have it end after that long.
  *
  * @example
  * ```tsx
@@ -45,10 +46,15 @@ export function useOccasion(): Occasion | null {
 
   useEffect(() => {
     if (import.meta.env.DEV) {
-      const forced = new URLSearchParams(window.location.search).get('occasion');
+      const params = new URLSearchParams(window.location.search);
+      const forced = params.get('occasion');
       if (OCCASIONS.includes(forced as Occasion)) {
         setOccasion(forced as Occasion);
-        return;
+        // `&occasionFor=<seconds>` ends the forced occasion, to preview the exit.
+        const seconds = Number(params.get('occasionFor'));
+        if (!(seconds > 0)) return;
+        const id = window.setTimeout(() => setOccasion(null), seconds * 1000);
+        return () => window.clearTimeout(id);
       }
     }
 

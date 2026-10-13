@@ -10,7 +10,8 @@ import {
   type ShaderMaterial,
   type Texture,
 } from 'three';
-import { useOccasion } from '@/hooks/useOccasion';
+import { GlitchText } from '@/components/text/GlitchText';
+import { useOccasionTransition } from '@/hooks/useOccasionTransition';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import type { Occasion } from '@/lib/occasions';
 import { colors } from '@/lib/tokens';
@@ -194,6 +195,14 @@ export interface HologramPortraitProps {
    * @defaultValue 360
    */
   size?: number;
+  /**
+   * Whether the portrait is on screen yet. The occasion glitch waits until
+   * this has been true for a moment, so it isn't spent behind the boot
+   * curtain.
+   *
+   * @defaultValue true
+   */
+  active?: boolean;
 }
 
 /**
@@ -218,22 +227,35 @@ export interface HologramPortraitProps {
  * outside the canvas as sibling DOM, layered above the WebGL output along
  * with the CRT scanline mask and refresh sweep.
  *
- * On calendar occasions ({@link useOccasion}) the portrait re-themes per
+ * On calendar occasions ({@link useOccasionTransition}) the portrait re-themes per
  * {@link OCCASION_THEMES}: the tint cycles through the occasion's palette, a
  * prop is parented to the portrait mesh so it sways with the head (party,
  * witch, or Santa hat; an orbiting egg at Easter), particles drift through
  * the frame (confetti, embers, snow, petals — frozen under reduced motion),
- * and the brackets and label strip take the occasion's accent.
+ * and the brackets and label strip take the occasion's accent. The default
+ * portrait shows first and then glitches into the occasion (and back out if
+ * it ends mid-visit) via {@link useOccasionTransition}: the canvas runs the
+ * `hud-signal-glitch` tear, and the label text bursts with {@link GlitchText}
+ * ghosts while it scrambles to the new copy.
  *
  * @example
  * ```tsx
- * <HologramPortrait size={360} />
+ * <HologramPortrait size={360} active={booted} />
  * ```
  */
-export function HologramPortrait({ size = 360 }: HologramPortraitProps) {
+export function HologramPortrait({ size = 360, active = true }: HologramPortraitProps) {
   const reducedMotion = usePrefersReducedMotion();
-  const occasion = useOccasion();
+  const { occasion, transition } = useOccasionTransition({ active });
   const theme = occasion ? OCCASION_THEMES[occasion] : null;
+  const glitching = transition !== null;
+  const label = theme
+    ? { left: theme.label, leftColor: theme.accent, right: theme.tag, rightColor: theme.tagColor }
+    : { left: 'SIG // HOLOGRAM', leftColor: colors.halo, right: 'REL-0.01', rightColor: undefined };
+  const labelText = (text: string) => (
+    <GlitchText mode={glitching ? 'burst' : 'off'} scramble={reducedMotion ? undefined : 450}>
+      {text}
+    </GlitchText>
+  );
 
   return (
     <div
@@ -247,7 +269,7 @@ export function HologramPortrait({ size = 360 }: HologramPortraitProps) {
     >
       <CornerBrackets color={theme?.accent ?? colors.amber} size={14} />
 
-      <div className="absolute inset-0">
+      <div className={`absolute inset-0${glitching ? ' hud-signal-glitch' : ''}`}>
         <Canvas
           gl={{
             alpha: true,
@@ -291,17 +313,8 @@ export function HologramPortrait({ size = 360 }: HologramPortraitProps) {
           background: 'rgba(11,30,46,0.6)',
         }}
       >
-        {theme ? (
-          <>
-            <span style={{ color: theme.accent }}>{theme.label}</span>
-            <span style={{ color: theme.tagColor }}>{theme.tag}</span>
-          </>
-        ) : (
-          <>
-            <span style={{ color: colors.halo }}>SIG // HOLOGRAM</span>
-            <span>REL-0.01</span>
-          </>
-        )}
+        <span style={{ color: label.leftColor }}>{labelText(label.left)}</span>
+        <span style={{ color: label.rightColor }}>{labelText(label.right)}</span>
       </div>
     </div>
   );

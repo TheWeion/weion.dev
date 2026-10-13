@@ -40,9 +40,10 @@ const buildStats = (): StatTile[] => [
  * `IntersectionObserver` trigger — content is visible immediately once
  * `BootSequence` releases the page, so there is no need to gate the heading
  * animation on scroll. The portrait column is hidden below the `md` breakpoint
- * to give the headline full width on phones.
+ * to give the headline full width on phones. `booted` is forwarded to the
+ * portrait so its occasion glitch plays after the boot curtain lifts.
  */
-export function HeroSection() {
+export function HeroSection({ booted = true }: { booted?: boolean }) {
   return (
     <section className="relative min-h-screen flex items-center pt-24 pb-32 px-4 md:px-10">
       <div className="relative z-10 max-w-6xl w-full mx-auto">
@@ -136,7 +137,7 @@ export function HeroSection() {
           </div>
 
           <div className="hidden md:flex items-center justify-center">
-            <HologramPortrait size={360} />
+            <HologramPortrait size={360} active={booted} />
           </div>
         </div>
       </div>
