@@ -1,6 +1,6 @@
 import { IconBrandGithub } from '@tabler/icons-react';
 import { ExternalLink, PlayCircle } from 'lucide-react';
-import { type ReactNode, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { CornerBrackets } from '@/components/hud/CornerBrackets';
 import { SectionHeading } from '@/components/hud/SectionHeading';
 import { VideoFeedModal } from '@/components/hud/VideoFeedModal';
@@ -190,6 +190,18 @@ function ProjectCard({ project, onOpenFeed }: ProjectCardProps) {
 }
 
 /**
+ * Props for {@link ArchiveSection}.
+ */
+interface ArchiveSectionProps {
+  /**
+   * Project id whose feed modal should open, supplied by `useDeepLink` once a
+   * deep-linked page has scrolled into place.
+   * @defaultValue `null`
+   */
+  openFeedId?: string | null;
+}
+
+/**
  * Section 04 — two-column grid of {@link ProjectCard}s sourced from
  * `projects` in `@/data/portfolio`.
  *
@@ -198,12 +210,23 @@ function ProjectCard({ project, onOpenFeed }: ProjectCardProps) {
  * themselves are static and rendered immediately. A single
  * {@link VideoFeedModal} is mounted at section level so only one feed can be
  * open at a time — switching projects swaps the active source via the
- * `feedFor` state.
+ * `feedFor` state. `openFeedId` lets a deep link (`?feed=01#archive`) open a
+ * project's feed without a click; ids without a `preview` are ignored.
+ *
+ * @example
+ * ```tsx
+ * <ArchiveSection openFeedId={deepLinkFeed} />
+ * ```
  */
-export function ArchiveSection() {
+export function ArchiveSection({ openFeedId = null }: ArchiveSectionProps) {
   const ref = useRef<HTMLElement>(null);
   const onScreen = useOnScreen(ref);
   const [feedFor, setFeedFor] = useState<Project | null>(null);
+
+  useEffect(() => {
+    const project = projects.find((p) => p.id === openFeedId);
+    if (project?.preview) setFeedFor(project);
+  }, [openFeedId]);
 
   return (
     <section ref={ref} id="archive" className="relative py-20 px-4 md:px-10">

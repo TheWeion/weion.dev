@@ -5,6 +5,7 @@ import { TopChrome } from '@/components/chrome/TopChrome';
 import { RippleFilters } from '@/components/overlays/RippleFilters';
 import { ScreenOverlays } from '@/components/overlays/ScreenOverlays';
 import { SceneErrorBoundary } from '@/components/SceneErrorBoundary';
+import { useDeepLink } from '@/hooks/useDeepLink';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { ArchiveSection } from '@/sections/ArchiveSection';
 import { CapabilitiesSection } from '@/sections/CapabilitiesSection';
@@ -63,6 +64,7 @@ const HudScene = lazy(() => import('@/scene/HudScene').then((m) => ({ default: m
 export default function App() {
   const reducedMotion = usePrefersReducedMotion();
   const [booted, setBooted] = useState(false);
+  const deepLinkFeed = useDeepLink(booted, reducedMotion);
 
   // Pre-warm the HudScene chunk so three.js is downloaded *and parsed* by the
   // time `booted` flips and the lazy mount renders for real — without this,
@@ -108,7 +110,7 @@ export default function App() {
         <HeroSection booted={booted} />
         <DossierSection />
         <CapabilitiesSection />
-        <ArchiveSection />
+        <ArchiveSection openFeedId={deepLinkFeed} />
         <TelemetrySection />
         <EofSection />
       </main>

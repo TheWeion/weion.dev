@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from '@/App';
+import { captureDeepLink } from '@/lib/deepLink';
 import '@fontsource/orbitron/latin-400.css';
 import '@fontsource/orbitron/latin-600.css';
 import '@fontsource/orbitron/latin-700.css';
@@ -12,10 +13,12 @@ import '@fontsource/rajdhani/latin-700.css';
 import '@fontsource/share-tech-mono/latin-400.css';
 import '@/styles/index.css';
 
-// Refreshes should land at the top of the page.
+// Refreshes and deep links should land at the top of the page; a deep link's
+// section is scrolled to after the boot sequence by `useDeepLink`.
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
+captureDeepLink();
 window.scrollTo(0, 0);
 
 // React DOM entry point. The `#root` lookup is intentionally fail-fast: if the

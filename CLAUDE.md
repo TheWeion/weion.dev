@@ -47,6 +47,10 @@ The amber lens (`z-[4]`) and atmospheric gradient (`z-[5]`) both live in `Screen
 
 `HudScene` starts its `frameloop="always"` immediately on mount for non-reduced-motion users. The earlier user-signal + 2.05 s fallback defer was a Lighthouse trick from when HudScene mounted at page load; now that `App` gates the mount behind `booted` (a 2.7 s boot animation has already played by then), the user is demonstrably present and the canvas can come alive right away. To bridge the chunk-load gap between boot end and scene appearance, `App` pre-warms the `@/scene/HudScene` chunk on a 2 s timer (matching the boot fade) so three.js is downloaded *and parsed* by the time `booted` flips — without this, the scene would lag the boot end by ~500–1500 ms. `CameraParallax` is hover-only — it skips the `pointermove` listener on touch-only devices (`(hover: hover)` query) and ignores `pointerType === 'touch'` on hybrid devices, so mobile scrolls don't drag the camera.
 
+### Deep links
+
+Inbound links like `https://weion.dev/#telemetry` or `https://weion.dev/?feed=01#archive` (the GitHub profile README uses both) play the boot and show the hero before moving. `captureDeepLink()` (`src/lib/deepLink.ts`) runs in `main.tsx` before React mounts, records the `#section` / `?feed=` target and strips them from the URL — otherwise the browser jumps to the fragment behind the boot curtain. `useDeepLink` (`src/hooks/useDeepLink.ts`) waits for `booted`, holds on the hero for `HERO_HOLD_MS`, smooth-scrolls to the section, restores `#section` in the URL, then returns the feed id, which `App` passes to `ArchiveSection`'s `openFeedId` to open that project's `VideoFeedModal`. `?feed` alone implies `#archive`; ids without a `preview` are ignored. Reduced motion skips the hold and jumps instantly. Section ids are `dossier`, `systems`, `archive`, `telemetry`, `eof` — renaming one breaks external links.
+
 ### Static boot placeholder
 
 `index.html` ships with `<body style="overflow:hidden">` plus a fixed-position `<div>` inside `#root` that mirrors the first BootSequence line ("> INITIATING REMOTE LINK ........"). Two reasons:
@@ -100,6 +104,7 @@ Netlify, configured in `netlify.toml`:
 - `public/robots.txt` exists so the SPA fallback in `public/_redirects` doesn't serve `index.html` for `/robots.txt` and fail the Lighthouse SEO audit. Same applies if you ever add `/sitemap.xml` — must be a real file under `public/`, not a SPA-fallback HTML page.
 - `weion.netlify.app` 301s to `https://weion.dev`. There is also a SPA-style `public/_redirects`.
 - `/assets/*` is served with a 1-year immutable cache, so Vite's hashed asset filenames must not be bypassed.
+- `.github/workflows/notify-profile.yml` fires a `repository_dispatch` (`weion-content-updated`, with the commit SHA) at `TheWeion/TheWeion` whenever `src/content/**` changes on `main`, so the generated GitHub profile README rebuilds from the new CMS content immediately. Needs the `PROFILE_DISPATCH_TOKEN` repo secret (fine-grained PAT, `TheWeion/TheWeion` only, Contents: read and write); without it the step warns and the profile's hourly sync catches up instead.
 
 ### Occasion easter eggs
 

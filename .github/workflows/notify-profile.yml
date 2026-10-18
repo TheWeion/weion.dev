@@ -1,0 +1,31 @@
+name: Notify profile README
+
+# Pages CMS commits to src/content/ land here; ping TheWeion/TheWeion so its
+# README rebuilds now instead of on its next hourly sync. The SHA is passed so
+# the profile build reads this exact commit (raw.githubusercontent.com caches
+# `main` for a few minutes).
+on:
+  push:
+    branches: [main]
+    paths: ['src/content/**']
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger profile rebuild
+        env:
+          GH_TOKEN: ${{ secrets.PROFILE_DISPATCH_TOKEN }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo '::warning::PROFILE_DISPATCH_TOKEN is not set; the profile README will pick this up on its hourly sync.'
+            exit 0
+          fi
+          gh api repos/TheWeion/TheWeion/dispatches \
+            -f event_type=weion-content-updated \
+            -f "client_payload[sha]=$SHA"
