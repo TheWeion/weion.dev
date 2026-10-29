@@ -211,7 +211,9 @@ On fetch failure the hook surfaces an `error` and the section renders empty pane
 
 ## Content
 
-All copy, skills, and project data live in `src/data/portfolio.ts` (with project entries split out into `src/data/projects.json`). Edit those files to update anything visible — the components consume them reactively.
+All copy, skills, and project data live in `src/content/*.json`, edited through [Pages CMS](https://pagescms.org) (`.pages.yml`) and validated by `src/data/portfolio.ts` at build time.
+
+To schedule an update, set **Publish at** on the page in Pages CMS before saving. The `Scheduled publish` workflow takes the save off `main` and opens a PR for it (saves for the same date and time share one PR). It merges the PR when that time arrives, checking every 15 minutes. The CMS's **Scheduled updates** page links to every pending PR. Merge a PR to publish early, or close it to cancel.
 
 ---
 

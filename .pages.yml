@@ -4,6 +4,10 @@
 # triggers a Netlify rebuild. Every file below is validated at build time by
 # src/data/portfolio.ts, so a malformed save fails the deploy instead of
 # shipping a broken page.
+#
+# Every page has an optional "Publish at" date. A save that sets one is moved
+# off main into a scheduled pull request and merged at that time (see
+# scripts/scheduled-publish.mjs); the "Scheduled updates" page lists them.
 
 media:
   input: public/videos
@@ -17,6 +21,12 @@ content:
     path: src/content/profile.json
     format: json
     fields:
+      - name: publish_at
+        label: Publish at
+        type: date
+        description: Optional. Leave blank to publish when you save. Set a date and time (in the profile's timezone) to hold this save in a scheduled pull request until then — saves for the same time share one PR. Pending ones are listed under Scheduled updates.
+        options:
+          time: true
       - name: operative
         label: Operative
         type: object
@@ -566,6 +576,12 @@ content:
         label: Skills acquired
         type: string
         list: true
+      - name: publish_at
+        label: Publish at
+        type: date
+        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
+        options:
+          time: true
 
   - name: education
     label: Education
@@ -609,6 +625,12 @@ content:
         label: Skills acquired
         type: string
         list: true
+      - name: publish_at
+        label: Publish at
+        type: date
+        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
+        options:
+          time: true
 
   - name: skills
     label: Skills
@@ -616,6 +638,12 @@ content:
     path: src/content/skills.json
     format: json
     fields:
+      - name: publish_at
+        label: Publish at
+        type: date
+        description: Optional. Leave blank to publish when you save. Set a date and time (in the profile's timezone) to hold this save in a scheduled pull request until then — saves for the same time share one PR. Pending ones are listed under Scheduled updates.
+        options:
+          time: true
       - name: skills
         label: All skills
         type: string
@@ -684,3 +712,25 @@ content:
             options:
               path: public/videos/projects
               extensions: [mp4]
+      - name: publish_at
+        label: Publish at
+        type: date
+        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
+        options:
+          time: true
+
+  - name: scheduled
+    label: Scheduled updates
+    type: file
+    path: .pages/scheduled.json
+    format: json
+    fields:
+      - name: status
+        label: Pending scheduled publishes
+        type: rich-text
+        readonly: true
+        description: Kept up to date by the Scheduled publish workflow. Open a PR to preview, publish early (merge) or cancel (close) it.
+        options:
+          format: html
+          switcher: false
+          media: false
