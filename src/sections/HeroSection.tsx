@@ -8,7 +8,7 @@ import { formatUtcOffset } from '@/lib/timezone';
 import { colors } from '@/lib/tokens';
 
 /**
- * One of the three stat tiles rendered beneath the hero CTA buttons.
+ * One of the stat tiles (up to three) rendered beneath the hero CTA buttons.
  */
 interface StatTile {
   /** Inline icon shown next to the label. */
@@ -20,7 +20,8 @@ interface StatTile {
 }
 
 // Built per render (not at module load) so the TIMEZONE offset reflects
-// daylight saving at the time the section mounts.
+// daylight saving at the time the section mounts. FOCUS is dropped when the
+// CMS field is blank.
 const buildStats = (): StatTile[] => [
   { icon: <Cpu size={12} aria-hidden />, label: 'STATUS', value: operative.status },
   {
@@ -28,7 +29,9 @@ const buildStats = (): StatTile[] => [
     label: 'TIMEZONE',
     value: formatUtcOffset(operative.timezone),
   },
-  { icon: <Zap size={12} aria-hidden />, label: 'FOCUS', value: 'Android & iOS' },
+  ...(operative.focus === null
+    ? []
+    : [{ icon: <Zap size={12} aria-hidden />, label: 'FOCUS', value: operative.focus }]),
 ];
 
 /**

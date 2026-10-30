@@ -1,10 +1,10 @@
 {
-  "publish_at": "",
   "operative": {
     "codename": "WEION",
     "realName": "TERRY FALLOWS",
     "role": "SEEKING REMOTE MID-LEVEL TO SENIOR SWE ROLES",
     "location": "EARTH // SOL SYSTEM",
+    "focus": "Android & iOS",
     "timezone": "Europe/London",
     "status": "AVAILABLE",
     "tagline": "Lover of all things code — currently seeking my next adventure in software engineering. I am a full-stack developer with a passion for building performant, accessible, and maintainable web applications that bring a positive impact to the customer and hopefully the world."
@@ -25,5 +25,6 @@
     "github": "https://github.com/TheWeion",
     "linkedin": "https://www.linkedin.com/in/terryfallows/",
     "email": "terry@weion.dev"
-  }
+  },
+  "publish_at": ""
 }

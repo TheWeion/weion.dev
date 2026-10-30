@@ -40,6 +40,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
+          # No install step, so there is no Yarn cache to save.
+          package-manager-cache: false
 
       - name: Configure bot identity
         run: |
