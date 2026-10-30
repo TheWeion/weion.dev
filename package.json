@@ -23,7 +23,7 @@
     "@react-three/fiber": "^9.0.0",
     "@react-three/postprocessing": "^3.0.4",
     "@tabler/icons-react": "^3.48.0",
-    "lucide-react": "^0.468.0",
+    "lucide-react": "^0.577.0",
     "postprocessing": "^6.39.1",
     "r3f-perf": "^7.2.3",
     "react": "^19.0.0",
