@@ -468,13 +468,53 @@ async function intercept(now, zone) {
       await api('PATCH', `/pulls/${pr.number}`, { body });
       console.log(`Updated #${pr.number} (${branch})`);
     } else {
-      const title = `Scheduled publish: ${formatWhen(publishAt, zone)}`;
-      const created = await api('POST', '/pulls', { title, body, head: branch, base: 'main' });
-      await api('POST', `/issues/${created.number}/labels`, { labels: [LABEL] });
-      console.log(`Opened #${created.number} (${branch})`);
+      await openPr(branch, publishAt, zone);
     }
   }
   return due.length > 0;
+}
+
+async function openPr(branch, publishAt, zone) {
+  const title = `Scheduled publish: ${formatWhen(publishAt, zone)}`;
+  const body = prBody(publishAt, zone, changedFiles(branch));
+  let created;
+  try {
+    created = await api('POST', '/pulls', { title, body, head: branch, base: 'main' });
+  } catch (error) {
+    if (error.status === 403) {
+      error.message +=
+        ' — turn on Settings → Actions → General → "Allow GitHub Actions to create and approve' +
+        ` pull requests". The edit is safe on ${branch}; the next run opens its PR.`;
+    }
+    throw error;
+  }
+  await api('POST', `/issues/${created.number}/labels`, { labels: [LABEL] });
+  console.log(`Opened #${created.number} (${branch})`);
+}
+
+/**
+ * Opens a PR for any scheduled branch that never got one — e.g. because PR
+ * creation failed after the edit had already been moved off main. Branches
+ * whose PR was closed (cancelled) are left alone.
+ */
+async function recoverOrphans(zone) {
+  const owner = REPO.split('/')[0];
+  const refs = git([
+    'for-each-ref',
+    '--format=%(refname:lstrip=3)',
+    `refs/remotes/origin/${BRANCH_PREFIX}`,
+  ])
+    .trim()
+    .split('\n')
+    .filter(Boolean);
+  for (const branch of refs) {
+    const m = /^scheduled\/(\d{4}-\d{2}-\d{2}T\d{2})-(\d{2})Z$/.exec(branch);
+    if (!m || changedFiles(branch).length === 0) continue;
+    const prs = await api('GET', `/pulls?state=all&head=${owner}:${encodeURIComponent(branch)}`);
+    if (prs.length > 0) continue;
+    console.log(`Recovering ${branch}, which has no PR`);
+    await openPr(branch, Date.parse(`${m[1]}:${m[2]}:00Z`), zone);
+  }
 }
 
 async function run() {
@@ -489,6 +529,7 @@ async function run() {
   git(['checkout', '--quiet', '-B', 'main', 'origin/main']);
   const zone = timezone();
   const publishedNow = await intercept(now, zone);
+  await recoverOrphans(zone);
 
   writeFile('.', DASHBOARD, dashboard(await scheduledPrs(), zone, now));
   if (commit('.', 'chore(schedule): update Pages CMS scheduled updates list')) {
