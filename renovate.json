@@ -1,0 +1,62 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Routine dependency updates. Security fixes are Dependabot's job (.github/dependabot.yml), so Renovate's vulnerability PRs are off.",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "timezone": "Europe/London",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 5,
+  "minimumReleaseAge": "1 day",
+  "postUpdateOptions": ["yarnDedupeHighest"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": false
+  },
+  "packageRules": [
+    {
+      "description": "Batch non-major updates into one weekly PR.",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "matchCurrentVersion": "!/^0/",
+      "groupName": "non-major dependencies",
+      "groupSlug": "all-non-major"
+    },
+    {
+      "description": "three ships breaking changes in 0.x minors; keep it and its types together, outside the non-major batch.",
+      "matchPackageNames": ["three", "@types/three"],
+      "groupName": "three"
+    },
+    {
+      "description": "The R3F stack and postprocessing move together.",
+      "matchPackageNames": ["@react-three/**", "postprocessing", "r3f-perf"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "react-three"
+    },
+    {
+      "description": "React and its types move together.",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "react"
+    },
+    {
+      "description": "Node majors must change .nvmrc, NODE_VERSION in netlify.toml and @types/node together, so they're done by hand.",
+      "matchManagers": ["nvm"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "@types/node tracks the Node major in .nvmrc.",
+      "matchPackageNames": ["@types/node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "The committed Yarn binary (.yarn/releases) is updated with `yarn set version`, not by bumping packageManager alone.",
+      "matchPackageNames": ["yarn"],
+      "matchDepTypes": ["packageManager"],
+      "enabled": false
+    }
+  ]
+}
