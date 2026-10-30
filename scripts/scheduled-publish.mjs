@@ -495,9 +495,9 @@ async function run() {
     git(['push', '--quiet', 'origin', 'HEAD:main']);
   }
 
-  // Pushes made with the default GITHUB_TOKEN don't start other workflows, so
-  // nudge the profile README rebuild ourselves when site content changed.
-  if ((published > 0 || publishedNow) && process.env.USING_APP_TOKEN !== 'true') {
+  // Pushes made with GITHUB_TOKEN don't start other workflows, so nudge the
+  // profile README rebuild ourselves when site content changed.
+  if (published > 0 || publishedNow) {
     await api('POST', '/actions/workflows/notify-profile.yml/dispatches', { ref: 'main' }).catch(
       (error) => console.log(`::warning::Could not trigger notify-profile: ${error.message}`),
     );

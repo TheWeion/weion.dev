@@ -5,10 +5,9 @@ name: Scheduled publish
 # the time comes. The cron run publishes due PRs and also re-checks main, so a
 # missed push run catches up. The logic lives in scripts/scheduled-publish.mjs.
 #
-# Runs as a GitHub App bot when the SCHEDULER_APP_ID variable and the
-# SCHEDULER_APP_PRIVATE_KEY secret are set (app needs Contents, Pull requests
-# and Issues: read and write). Otherwise it falls back to github-actions[bot],
-# which needs "Allow GitHub Actions to create and approve pull requests" on.
+# Runs as github-actions[bot] with the built-in GITHUB_TOKEN. Opening PRs needs
+# Settings → Actions → General → "Allow GitHub Actions to create and approve
+# pull requests" turned on.
 on:
   push:
     branches: [main]
@@ -33,41 +32,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Mint bot token
-        id: app
-        if: vars.SCHEDULER_APP_ID != ''
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ vars.SCHEDULER_APP_ID }}
-          private-key: ${{ secrets.SCHEDULER_APP_PRIVATE_KEY }}
-
       - uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ steps.app.outputs.token || github.token }}
 
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
 
       - name: Configure bot identity
-        env:
-          GH_TOKEN: ${{ steps.app.outputs.token || github.token }}
-          APP_SLUG: ${{ steps.app.outputs.app-slug }}
         run: |
-          if [ -n "$APP_SLUG" ]; then
-            name="${APP_SLUG}[bot]"
-            id=$(gh api "/users/${name}" --jq .id)
-          else
-            name='github-actions[bot]'
-            id=41898282
-          fi
-          git config user.name "$name"
-          git config user.email "${id}+${name}@users.noreply.github.com"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
       - name: Publish due PRs and hold new scheduled edits
         env:
-          GH_TOKEN: ${{ steps.app.outputs.token || github.token }}
-          USING_APP_TOKEN: ${{ steps.app.outputs.token != '' }}
+          GH_TOKEN: ${{ github.token }}
         run: node scripts/scheduled-publish.mjs run
