@@ -24,6 +24,7 @@ content:
       - name: publish_at
         label: Publish at
         type: date
+        default: ""
         description: Optional. Leave blank to publish when you save. Set a date and time (in the profile's timezone) to hold this save in a scheduled pull request until then — saves for the same time share one PR. Pending ones are listed under Scheduled updates.
         options:
           time: true
@@ -485,6 +486,10 @@ content:
             type: string
             required: true
             description: "e.g. AVAILABLE, ACTIVE, STANDBY"
+          - name: focus
+            label: Focus
+            type: string
+            description: "Hero FOCUS tile, e.g. Android & iOS. Leave blank to hide the tile."
           - name: tagline
             label: Tagline
             type: text
@@ -541,6 +546,13 @@ content:
     format: json
     list: true
     fields:
+      - name: publish_at
+        label: Publish at
+        type: date
+        default: ""
+        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
+        options:
+          time: true
       - name: org
         label: Organisation
         type: string
@@ -576,12 +588,6 @@ content:
         label: Skills acquired
         type: string
         list: true
-      - name: publish_at
-        label: Publish at
-        type: date
-        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
-        options:
-          time: true
 
   - name: education
     label: Education
@@ -590,6 +596,13 @@ content:
     format: json
     list: true
     fields:
+      - name: publish_at
+        label: Publish at
+        type: date
+        default: ""
+        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
+        options:
+          time: true
       - name: org
         label: Organisation
         type: string
@@ -625,12 +638,6 @@ content:
         label: Skills acquired
         type: string
         list: true
-      - name: publish_at
-        label: Publish at
-        type: date
-        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
-        options:
-          time: true
 
   - name: skills
     label: Skills
@@ -641,6 +648,7 @@ content:
       - name: publish_at
         label: Publish at
         type: date
+        default: ""
         description: Optional. Leave blank to publish when you save. Set a date and time (in the profile's timezone) to hold this save in a scheduled pull request until then — saves for the same time share one PR. Pending ones are listed under Scheduled updates.
         options:
           time: true
@@ -662,6 +670,13 @@ content:
     format: json
     list: true
     fields:
+      - name: publish_at
+        label: Publish at
+        type: date
+        default: ""
+        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
+        options:
+          time: true
       - name: id
         label: ID
         type: string
@@ -712,12 +727,6 @@ content:
             options:
               path: public/videos/projects
               extensions: [mp4]
-      - name: publish_at
-        label: Publish at
-        type: date
-        description: Optional. Set a date and time (in the profile's timezone) to hold this whole save until then instead of publishing it now. Pending saves are listed under Scheduled updates.
-        options:
-          time: true
 
   - name: scheduled
     label: Scheduled updates

@@ -162,9 +162,9 @@ const skillGroups = obj(skillsData, 'skills.json');
  * Operative profile shown in the HUD chrome and hero/dossier sections.
  *
  * @remarks
- * Single source of truth for the codename, real name, role, affiliation, and
- * status fields rendered in {@link TopChrome}, {@link HeroSection}, and
- * {@link DossierSection}. Edited via Pages CMS → `src/content/profile.json`.
+ * Single source of truth for the codename, real name, role, affiliation,
+ * status, and focus fields rendered in {@link TopChrome}, {@link HeroSection},
+ * and {@link DossierSection}. Edited via Pages CMS → `src/content/profile.json`.
  * Also read by `vite.config.ts` to build the page's meta tags.
  */
 export const operative: Operative = {
@@ -175,6 +175,7 @@ export const operative: Operative = {
   location: str(operativeData.location, 'profile.json#operative.location'),
   timezone: timeZone(operativeData.timezone, 'profile.json#operative.timezone'),
   status: str(operativeData.status, 'profile.json#operative.status'),
+  focus: optStr(operativeData.focus, 'profile.json#operative.focus') ?? null,
   tagline: str(operativeData.tagline, 'profile.json#operative.tagline'),
 };
 
