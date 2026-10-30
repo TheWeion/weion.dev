@@ -5300,12 +5300,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.577.0":
-  version: 0.577.0
-  resolution: "lucide-react@npm:0.577.0"
+"lucide-react@npm:^1.0.0":
+  version: 1.64.0
+  resolution: "lucide-react@npm:1.64.0"
   peerDependencies:
+    "@types/react": "*"
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/f5f56d66d5072b69ab74af2196833e35b888c18d92906d75aff81afc0aeabf00a4092a5b9dbc1bddd250bf54ec3c5d5933c7353589b5cb7efd75b21651cda399
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/fe02e02a8c6a58fad4e27f0be0791fd4a6015ac02eec026bb51299e9e6221ed28b9e735229acb711e3fdfc27055ea89f326077249d63ff00fd5968d3e93f703f
   languageName: node
   linkType: hard
 
@@ -7800,7 +7804,7 @@ __metadata:
     "@types/three": "npm:^0.170.0"
     "@unlighthouse/cli": "npm:^0.19.0"
     "@vitejs/plugin-react": "npm:^6.1.1"
-    lucide-react: "npm:^0.577.0"
+    lucide-react: "npm:^1.0.0"
     postprocessing: "npm:^6.39.1"
     r3f-perf: "npm:^7.2.3"
     react: "npm:^19.0.0"
