@@ -3,7 +3,7 @@
     "org": "VANTIVA",
     "role": "SENIOR SOFTWARE ENGINEER",
     "start": "2025-09",
-    "end": "2026-10",
+    "end": null,
     "location": "SHIPLEY, UK · REMOTE",
     "summary": [
       "In my role, I contributed to the development of innovative software solutions, including the HomeSight app for care homes. I collaborated with a diverse agile team, focusing on enhancing user experience and ensuring effective communication with stakeholders. My work on TV products further honed my skills in managing projects under tight deadlines and confidentiality agreements."
@@ -32,8 +32,7 @@
       "TypeScript",
       "Vite",
       "Xcode"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "VANTIVA",
@@ -61,8 +60,7 @@
       "Redux.js",
       "TypeScript",
       "Xcode"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "COMMSCOPE",
@@ -80,8 +78,7 @@
       "JavaScript",
       "PowerShell",
       "SSH"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "LA FOSSE ACADEMY",
@@ -98,8 +95,7 @@
       "JavaScript",
       "Web Development",
       "Visual Studio"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "LA FOSSE ACADEMY",
@@ -127,16 +123,14 @@
       "Netlify",
       "GitHub",
       "HCI"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "BT",
     "role": "CUSTOMER CARE ADVISOR",
     "start": "2022-03",
     "end": "2022-05",
-    "location": "ACCRINGTON, UK · HYBRID",
-    "publish_at": "2026-10-30T01:29"
+    "location": "ACCRINGTON, UK · HYBRID"
   },
   {
     "org": "BT",
@@ -154,8 +148,7 @@
       "Microsoft Excel",
       "Forecasting",
       "Automation"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "BT",
@@ -168,8 +161,7 @@
       "Microsoft Excel",
       "Microsoft Office",
       "Spreadsheets"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "BT",
@@ -185,8 +177,7 @@
     "skills": [
       "Analytical Skills",
       "Data Integrity"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "BT",
@@ -205,8 +196,7 @@
       "Conflict Resolution",
       "Oracle",
       "CRM"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "BT",
@@ -222,8 +212,7 @@
     "skills": [
       "Analytical Skills",
       "Critical Thinking"
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "BT",
@@ -235,8 +224,7 @@
       "As a Customer Care Advisor at BT, I was responsible for servicing customers during their order journey, ensuring that they got and remained connected to the company's services. My main focus was on providing a personal service to the customer and managing their expectations.",
       "To fulfill this role, I gained experience in inbound, outbound, and offline communication with customers and suppliers. I also developed technical knowledge of Openreach's network in regards to FTTC and Copper provision/faults.",
       "Overall, this role provided me with experience in various forms of communication and a deeper understanding of Openreach's network, allowing me to effectively support customers during their order journey."
-    ],
-    "publish_at": "2026-10-30T01:29"
+    ]
   },
   {
     "org": "FREELANCE",
@@ -251,7 +239,6 @@
       "HTML5",
       "JavaScript",
       "CSS3"
-    ],
-    "publish_at": "2026-10-30T23:59"
+    ]
   }
 ]
