@@ -25,6 +25,8 @@ export interface Operative {
   timezone: string;
   /** Operational status badge text (e.g. `'ACTIVE'`, `'STANDBY'`). */
   status: string;
+  /** Hero FOCUS tile text (e.g. `'Android & iOS'`); `null` hides the tile. */
+  focus: string | null;
   /** One-line tagline / current focus shown in the hero. */
   tagline: string;
 }
