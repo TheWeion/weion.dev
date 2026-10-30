@@ -6,6 +6,7 @@
   "schedule": ["before 6am on monday"],
   "labels": ["dependencies"],
   "prConcurrentLimit": 5,
+  "minimumReleaseAge": "1 day",
   "postUpdateOptions": ["yarnDedupeHighest"],
   "lockFileMaintenance": {
     "enabled": true,
