@@ -117,6 +117,42 @@ function toProject(value: unknown, path: string): Project {
   };
 }
 
+/**
+ * Fails the build if a `publish_at` date is still set. Every CMS page has one
+ * for scheduled publishing; `scripts/scheduled-publish.mjs` clears it as it
+ * moves the save into its scheduled PR, so a value reaching a build means that
+ * hand-off hasn't happened yet. Netlify's `ignore` hook normally skips that
+ * build — this is the backstop that keeps the edit from going live early.
+ */
+function assertNotScheduled(value: unknown, path: string): void {
+  if (Array.isArray(value)) {
+    value.forEach((item, i) => {
+      assertNotScheduled(item, `${path}[${i}]`);
+    });
+  } else if (value !== null && typeof value === 'object') {
+    for (const [key, child] of Object.entries(value)) {
+      const childPath = `${path}${path.endsWith('.json') ? '#' : '.'}${key}`;
+      if (key === 'publish_at' && typeof child === 'string' && child.trim() !== '') {
+        throw new Error(
+          `[content] ${childPath}: "${child}" is scheduled; the scheduled-publish workflow ` +
+            'has not moved it into its PR yet',
+        );
+      }
+      assertNotScheduled(child, childPath);
+    }
+  }
+}
+
+for (const [file, data] of Object.entries({
+  'education.json': educationData,
+  'experience.json': experienceData,
+  'profile.json': profileData,
+  'projects.json': projectsData,
+  'skills.json': skillsData,
+})) {
+  assertNotScheduled(data, file);
+}
+
 const profile = obj(profileData, 'profile.json');
 const operativeData = obj(profile.operative, 'profile.json#operative');
 const socialsData = obj(profile.socials, 'profile.json#socials');

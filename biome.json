@@ -14,7 +14,8 @@
       "!assets",
       "!package-lock.json",
       "!**/*.css",
-      "!src/content"
+      "!src/content",
+      "!.pages"
     ]
   },
   "formatter": {

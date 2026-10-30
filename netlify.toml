@@ -1,6 +1,9 @@
 [build]
   command = "yarn build"
   publish = "dist"
+  # Exit 0 skips the build: a Pages CMS save with a future "Publish at" must
+  # not go live before scripts/scheduled-publish.mjs moves it into its PR.
+  ignore = "node scripts/scheduled-publish.mjs netlify-ignore"
 
 [build.environment]
   NODE_VERSION = "24"

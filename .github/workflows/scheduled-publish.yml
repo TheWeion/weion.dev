@@ -1,0 +1,52 @@
+name: Scheduled publish
+
+# Pages CMS can't schedule, so a save that sets "Publish at" lands on main and
+# this workflow moves it into a PR (one per publish time) that it merges when
+# the time comes. The cron run publishes due PRs and also re-checks main, so a
+# missed push run catches up. The logic lives in scripts/scheduled-publish.mjs.
+#
+# Runs as github-actions[bot] with the built-in GITHUB_TOKEN. Opening PRs needs
+# Settings → Actions → General → "Allow GitHub Actions to create and approve
+# pull requests" turned on.
+on:
+  push:
+    branches: [main]
+    paths: ['src/content/**']
+  schedule:
+    - cron: '4,19,34,49 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+
+# Serialized: every run reads and rewrites main and the scheduled/* branches.
+concurrency:
+  group: scheduled-publish
+  cancel-in-progress: false
+
+jobs:
+  schedule:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      - name: Configure bot identity
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Publish due PRs and hold new scheduled edits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/scheduled-publish.mjs run

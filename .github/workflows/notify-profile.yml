@@ -4,20 +4,35 @@ name: Notify profile README
 # README rebuilds now instead of on its next hourly sync. The SHA is passed so
 # the profile build reads this exact commit (raw.githubusercontent.com caches
 # `main` for a few minutes).
+#
+# Saves with a "Publish at" date are skipped: scheduled-publish.yml moves them
+# into a PR, and this runs again when that PR merges.
 on:
   push:
     branches: [main]
     paths: ['src/content/**']
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   dispatch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+            src/content
+
+      - name: Check for scheduled edits
+        id: scheduled
+        run: echo "pending=$(node scripts/scheduled-publish.mjs pending)" >> "$GITHUB_OUTPUT"
+
       - name: Trigger profile rebuild
+        if: steps.scheduled.outputs.pending != 'true'
         env:
           GH_TOKEN: ${{ secrets.PROFILE_DISPATCH_TOKEN }}
           SHA: ${{ github.sha }}
