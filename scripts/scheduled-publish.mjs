@@ -165,44 +165,175 @@ function remoteBranchExists(branch) {
 class ConflictError extends Error {}
 
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
-const sameJson = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+/**
+ * Comparable form of a JSON value: keys sorted, and blank values ('', null,
+ * []) dropped. Pages CMS reorders keys into field order and writes blanks
+ * for empty fields (every item gains `"publish_at": ""`), none of which is a
+ * real edit.
+ */
+function canon(value) {
+  if (Array.isArray(value)) return value.map(canon);
+  if (isPlainObject(value)) {
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      const v = canon(value[key]);
+      if (!(v === '' || v === null || v === undefined || (Array.isArray(v) && v.length === 0))) {
+        out[key] = v;
+      }
+    }
+    return out;
+  }
+  return value;
+}
+
+const key = (value) => JSON.stringify(canon(value));
+const sameJson = (a, b) => key(a) === key(b);
 
 /**
- * Three-way merge of parsed JSON: a value changed on only one side takes that
- * side, objects merge key by key, and equal-length lists merge item by item.
- * Throws a ConflictError only when both sides changed the same value
- * differently. Pages CMS rewrites whole files in field order, so a line-based
- * merge would see clashes between edits to neighbouring fields.
+ * Three-way merge of parsed JSON. A value changed on only one side takes that
+ * side, objects merge key by key, and lists merge item by item ({@link mergeList}).
+ * When both sides changed the same value, `prefer` ('ours' or 'theirs') wins —
+ * the newer CMS save, or the scheduled branch over main — so there is no such
+ * thing as a content conflict. Pages CMS rewrites whole files in field order,
+ * which is why this isn't line-based.
  */
-function mergeJson(ours, base, theirs, path) {
+function mergeJson(ours, base, theirs, prefer, path) {
   if (sameJson(theirs, base)) return ours;
   if (sameJson(ours, base) || sameJson(ours, theirs)) return theirs;
   if (isPlainObject(ours) && isPlainObject(base) && isPlainObject(theirs)) {
     const out = {};
     for (const key of new Set([...Object.keys(theirs), ...Object.keys(ours)])) {
-      const value = mergeJson(ours[key], base[key], theirs[key], `${path}.${key}`);
+      const value = mergeJson(ours[key], base[key], theirs[key], prefer, `${path}.${key}`);
       if (value !== undefined) out[key] = value;
     }
     return out;
   }
-  if (
-    Array.isArray(ours) &&
-    Array.isArray(base) &&
-    Array.isArray(theirs) &&
-    ours.length === base.length &&
-    theirs.length === base.length
-  ) {
-    return theirs.map((item, i) => mergeJson(ours[i], base[i], item, `${path}[${i}]`));
+  if (Array.isArray(ours) && Array.isArray(base) && Array.isArray(theirs)) {
+    return mergeList(ours, base, theirs, prefer, path);
   }
-  throw new ConflictError(`${path} was changed differently on both sides`);
+  console.log(
+    `${path}: changed on both sides, keeping the ${prefer === 'theirs' ? 'newer save' : 'scheduled value'}`,
+  );
+  return prefer === 'theirs' ? theirs : ours;
+}
+
+/** Index in `b` matched to each item of `a` by a longest common subsequence (-1 = none). */
+function matchItems(a, b) {
+  const ka = a.map(key);
+  const kb = b.map(key);
+  const len = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = a.length - 1; i >= 0; i--) {
+    for (let j = b.length - 1; j >= 0; j--) {
+      len[i][j] = ka[i] === kb[j] ? len[i + 1][j + 1] + 1 : Math.max(len[i + 1][j], len[i][j + 1]);
+    }
+  }
+  const match = new Array(a.length).fill(-1);
+  for (let i = 0, j = 0; i < a.length && j < b.length; ) {
+    if (ka[i] === kb[j]) match[i++] = j++;
+    else if (len[i + 1][j] >= len[i][j + 1]) i++;
+    else j++;
+  }
+  return match;
+}
+
+/** Share of fields two list items agree on (0–1); non-objects are 1 only when equal. */
+function similarity(a, b) {
+  if (!isPlainObject(a) || !isPlainObject(b)) return sameJson(a, b) ? 1 : 0;
+  const ca = canon(a);
+  const cb = canon(b);
+  const keys = new Set([...Object.keys(ca), ...Object.keys(cb)]);
+  let same = 0;
+  for (const k of keys) if (sameJson(ca[k], cb[k])) same++;
+  return keys.size === 0 ? 1 : same / keys.size;
+}
+
+/** For each `base` item, the most similar unused `other` item (≥ half its fields), or -1. */
+function pairUp(base, other) {
+  const used = new Set();
+  return base.map((item) => {
+    let best = -1;
+    let bestScore = 0.5;
+    other.forEach((candidate, j) => {
+      const score = used.has(j) ? 0 : similarity(item, candidate);
+      if (score >= bestScore && (best === -1 || score > bestScore)) {
+        best = j;
+        bestScore = score;
+      }
+    });
+    if (best >= 0) used.add(best);
+    return best;
+  });
+}
+
+/**
+ * diff3 over list items: items untouched on both sides anchor the merge, and
+ * each stretch between anchors takes whichever side changed it. A stretch
+ * changed on both sides pairs each base item with its edited version on each
+ * side by similarity, so an edit on one side and an insertion or removal on
+ * the other both survive; the same item edited on both sides merges field by
+ * field. Order follows the `prefer` side.
+ */
+function mergeList(ours, base, theirs, prefer, path) {
+  const toOurs = matchItems(base, ours);
+  const toTheirs = matchItems(base, theirs);
+  const out = [];
+  let b = 0;
+  let o = 0;
+  let t = 0;
+  for (let i = 0; i <= base.length; i++) {
+    const anchor = i === base.length || (toOurs[i] >= 0 && toTheirs[i] >= 0);
+    if (!anchor) continue;
+    const oEnd = i === base.length ? ours.length : toOurs[i];
+    const tEnd = i === base.length ? theirs.length : toTheirs[i];
+    const chunk = [ours.slice(o, oEnd), base.slice(b, i), theirs.slice(t, tEnd)];
+    out.push(...mergeChunk(...chunk, prefer, path));
+    // Anchors only match up to blanks and key order, so merge those too.
+    if (i < base.length) out.push(mergeJson(ours[oEnd], base[i], theirs[tEnd], prefer, path));
+    b = i + 1;
+    o = oEnd + 1;
+    t = tEnd + 1;
+  }
+  return out;
+}
+
+function mergeChunk(ours, base, theirs, prefer, path) {
+  if (sameJson(theirs, base)) return ours;
+  if (sameJson(ours, base) || sameJson(ours, theirs)) return theirs;
+  const pairOurs = pairUp(base, ours);
+  const pairTheirs = pairUp(base, theirs);
+  const lead = prefer === 'theirs' ? theirs : ours;
+  const pairLead = prefer === 'theirs' ? pairTheirs : pairOurs;
+  const pairOther = prefer === 'theirs' ? pairOurs : pairTheirs;
+  const other = prefer === 'theirs' ? ours : theirs;
+  const out = [];
+  lead.forEach((item, j) => {
+    const bi = pairLead.indexOf(j);
+    if (bi < 0) {
+      out.push(item); // added on the lead side
+      return;
+    }
+    const oj = pairOther[bi];
+    if (oj < 0) {
+      // Removed on the other side: honour that unless the lead side edited it.
+      if (!sameJson(item, base[bi])) out.push(item);
+      return;
+    }
+    const [mine, yours] = prefer === 'theirs' ? [other[oj], item] : [item, other[oj]];
+    out.push(mergeJson(mine, base[bi], yours, prefer, path));
+  });
+  other.forEach((item, j) => {
+    // Added on the other side.
+    if (!pairOther.includes(j) && !out.some((x) => sameJson(x, item))) out.push(item);
+  });
+  return out;
 }
 
 /** {@link mergeJson} over file texts (`null` = missing), written as Pages CMS writes JSON. */
-function mergeFile(ours, base, theirs, path) {
+function mergeFile(ours, base, theirs, prefer, path) {
   if (ours === base) return theirs;
   if (theirs === base || theirs === ours) return ours;
   const parse = (text) => (text === null ? undefined : JSON.parse(text));
-  const merged = mergeJson(parse(ours), parse(base), parse(theirs), path);
+  const merged = mergeJson(parse(ours), parse(base), parse(theirs), prefer, path);
   if (merged === undefined) return null;
   if (sameJson(merged, parse(ours))) return ours;
   if (sameJson(merged, parse(theirs))) return theirs;
@@ -245,10 +376,11 @@ function syncWithMain(dir, target) {
   const ours = new Set(changedBetween(mergeBase, head, dir));
   for (const path of changedBetween(mergeBase, target, dir).filter((p) => ours.has(p))) {
     try {
+      // The branch wins on a clash: its value is what's scheduled to go out.
       writeFile(
         dir,
         path,
-        mergeFile(show(head, path), show(mergeBase, path), show(target, path), path),
+        mergeFile(show(head, path), show(mergeBase, path), show(target, path), 'ours', path),
       );
     } catch (error) {
       spawnSync('git', ['merge', '--abort'], { cwd: dir });
@@ -519,7 +651,8 @@ async function intercept(now, zone) {
         for (const h of saves) {
           path = h.path;
           const ours = show('HEAD', h.path, dir);
-          writeFile(dir, h.path, mergeFile(ours, h.base, h.stripped, h.path));
+          // The newer save wins, so re-saving a scheduled field replaces it.
+          writeFile(dir, h.path, mergeFile(ours, h.base, h.stripped, 'theirs', h.path));
           commit(dir, `${h.subject}\n\nScheduled for ${formatWhen(publishAt, zone)}.`, h.author);
         }
       } catch (error) {
