@@ -153,8 +153,8 @@ function git(args, options = {}) {
 }
 
 /** File contents at `ref`, or `null` if it doesn't exist there. */
-function show(ref, path) {
-  const result = spawnSync('git', ['show', `${ref}:${path}`], { encoding: 'utf8' });
+function show(ref, path, cwd) {
+  const result = spawnSync('git', ['show', `${ref}:${path}`], { cwd, encoding: 'utf8' });
   return result.status === 0 ? result.stdout : null;
 }
 
@@ -162,32 +162,114 @@ function remoteBranchExists(branch) {
   return spawnSync('git', ['rev-parse', '--verify', '--quiet', `origin/${branch}`]).status === 0;
 }
 
+class ConflictError extends Error {}
+
+const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const sameJson = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
 /**
- * Three-way merge of one file's text, as `git merge-file` does it. Throws on
- * conflict so a clashing edit fails loudly instead of being dropped.
+ * Three-way merge of parsed JSON: a value changed on only one side takes that
+ * side, objects merge key by key, and equal-length lists merge item by item.
+ * Throws a ConflictError only when both sides changed the same value
+ * differently. Pages CMS rewrites whole files in field order, so a line-based
+ * merge would see clashes between edits to neighbouring fields.
  */
-function merge3(ours, base, theirs, path) {
+function mergeJson(ours, base, theirs, path) {
+  if (sameJson(theirs, base)) return ours;
+  if (sameJson(ours, base) || sameJson(ours, theirs)) return theirs;
+  if (isPlainObject(ours) && isPlainObject(base) && isPlainObject(theirs)) {
+    const out = {};
+    for (const key of new Set([...Object.keys(theirs), ...Object.keys(ours)])) {
+      const value = mergeJson(ours[key], base[key], theirs[key], `${path}.${key}`);
+      if (value !== undefined) out[key] = value;
+    }
+    return out;
+  }
+  if (
+    Array.isArray(ours) &&
+    Array.isArray(base) &&
+    Array.isArray(theirs) &&
+    ours.length === base.length &&
+    theirs.length === base.length
+  ) {
+    return theirs.map((item, i) => mergeJson(ours[i], base[i], item, `${path}[${i}]`));
+  }
+  throw new ConflictError(`${path} was changed differently on both sides`);
+}
+
+/** {@link mergeJson} over file texts (`null` = missing), written as Pages CMS writes JSON. */
+function mergeFile(ours, base, theirs, path) {
   if (ours === base) return theirs;
   if (theirs === base || theirs === ours) return ours;
-  const dir = mkdtempSync(join(tmpdir(), 'scheduled-publish-'));
+  const parse = (text) => (text === null ? undefined : JSON.parse(text));
+  const merged = mergeJson(parse(ours), parse(base), parse(theirs), path);
+  if (merged === undefined) return null;
+  if (sameJson(merged, parse(ours))) return ours;
+  if (sameJson(merged, parse(theirs))) return theirs;
+  return JSON.stringify(merged, null, 2);
+}
+
+/** Runs `fn(dir)` in a temporary worktree with `branch` checked out at `start`. */
+async function withWorktree(branch, start, fn) {
+  const dir = mkdtempSync(join(tmpdir(), 'scheduled-branch-'));
+  git(['worktree', 'add', '--quiet', '-B', branch, dir, start]);
   try {
-    const files = { ours, base, theirs };
-    for (const [name, text] of Object.entries(files)) writeFileSync(join(dir, name), text ?? '');
-    const result = spawnSync(
-      'git',
-      ['merge-file', '-p', join(dir, 'ours'), join(dir, 'base'), join(dir, 'theirs')],
-      { encoding: 'utf8' },
-    );
-    if (result.status !== 0) {
-      throw new Error(
-        `${path}: this edit conflicts with an earlier one scheduled for the same time`,
-      );
-    }
-    return result.stdout;
+    return await fn(dir);
   } finally {
-    rmSync(dir, { recursive: true, force: true });
+    git(['worktree', 'remove', '--force', dir]);
   }
 }
+
+function changedBetween(from, to, cwd) {
+  return git(['diff', '--name-only', from, to, '--', CONTENT_DIR], { cwd })
+    .trim()
+    .split('\n')
+    .filter(Boolean);
+}
+
+/**
+ * Merges `target` (main) into the branch checked out in `dir`, so its PR
+ * holds only the scheduled edits and merges cleanly. Content files changed
+ * on both sides are merged with {@link mergeFile}. Returns false if the
+ * branch already contains `target`.
+ */
+function syncWithMain(dir, target) {
+  if (
+    spawnSync('git', ['merge-base', '--is-ancestor', target, 'HEAD'], { cwd: dir }).status === 0
+  ) {
+    return false;
+  }
+  const head = git(['rev-parse', 'HEAD'], { cwd: dir }).trim();
+  const mergeBase = git(['merge-base', 'HEAD', target], { cwd: dir }).trim();
+  spawnSync('git', ['merge', '--no-ff', '--no-commit', '--quiet', target], { cwd: dir });
+  const ours = new Set(changedBetween(mergeBase, head, dir));
+  for (const path of changedBetween(mergeBase, target, dir).filter((p) => ours.has(p))) {
+    try {
+      writeFile(
+        dir,
+        path,
+        mergeFile(show(head, path), show(mergeBase, path), show(target, path), path),
+      );
+    } catch (error) {
+      spawnSync('git', ['merge', '--abort'], { cwd: dir });
+      throw error;
+    }
+  }
+  const unmerged = git(['diff', '--name-only', '--diff-filter=U'], { cwd: dir }).trim();
+  if (unmerged) {
+    spawnSync('git', ['merge', '--abort'], { cwd: dir });
+    throw new ConflictError(`${unmerged.split('\n').join(', ')} conflict with main`);
+  }
+  git(['commit', '--quiet', '--no-edit', '-m', 'Merge main into this scheduled update'], {
+    cwd: dir,
+  });
+  return true;
+}
+
+const CONFLICT_HELP =
+  'Save that page again in the CMS so it no longer clashes (or with **Publish at** cleared to ' +
+  'publish it now), or close this PR to cancel the earlier edit and schedule the new one on ' +
+  'its own.';
 
 /**
  * The newest version of `path` on `main` without a pending `publish_at` —
@@ -340,13 +422,30 @@ async function publishDue(now) {
   let merged = 0;
   for (const pr of await scheduledPrs()) {
     if (pr.publishAt > now) continue;
+    const branch = pr.head.ref;
     try {
-      await api('PUT', `/pulls/${pr.number}/merge`, {
-        merge_method: MERGE_METHOD,
-        commit_title: `${pr.title} (#${pr.number})`,
-        sha: pr.head.sha,
-      });
-      await api('DELETE', `/git/refs/heads/${pr.head.ref}`).catch(() => {});
+      // Bring the branch up to date first so GitHub's line-based merge can't
+      // trip over other edits made on main since it was scheduled.
+      const synced = await withWorktree(branch, `origin/${branch}`, (dir) =>
+        syncWithMain(dir, 'origin/main'),
+      );
+      if (synced) git(['push', '--quiet', 'origin', `${branch}:${branch}`]);
+      const sha = git(['rev-parse', branch]).trim();
+      for (let attempt = 1; ; attempt++) {
+        try {
+          await api('PUT', `/pulls/${pr.number}/merge`, {
+            merge_method: MERGE_METHOD,
+            commit_title: `${pr.title} (#${pr.number})`,
+            sha,
+          });
+          break;
+        } catch (error) {
+          // Right after a push GitHub may still be computing mergeability.
+          if (!synced || attempt === 5 || ![405, 409].includes(error.status)) throw error;
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        }
+      }
+      await api('DELETE', `/git/refs/heads/${branch}`).catch(() => {});
       console.log(`Published #${pr.number}`);
       merged++;
     } catch (error) {
@@ -354,9 +453,8 @@ async function publishDue(now) {
       await commentOnce(
         pr.number,
         BLOCKED_MARKER,
-        `⚠️ This was due to publish but couldn't be merged automatically (\`${error.status}\`). ` +
-          'Resolve the conflict or failing checks and merge it by hand, or push a fix and the ' +
-          'next scheduled run will retry.',
+        `⚠️ This was due to publish but couldn't be merged automatically: ${error.message}. ` +
+          'Resolve it and merge by hand, or push a fix and the next scheduled run will retry.',
       );
     }
   }
@@ -411,42 +509,32 @@ async function intercept(now, zone) {
     const branch = branchFor(publishAt);
     const pr = openPrs.find((p) => p.head.ref === branch);
     const reuse = Boolean(pr) && remoteBranchExists(branch);
-    const worktree = mkdtempSync(join(tmpdir(), 'scheduled-branch-'));
-    git([
-      'worktree',
-      'add',
-      '--quiet',
-      '-B',
-      branch,
-      worktree,
-      reuse ? `origin/${branch}` : 'HEAD',
-    ]);
-    try {
-      for (const h of saves) {
-        const ours = show(branch, h.path);
-        let merged;
-        try {
-          merged = merge3(ours, h.base, h.stripped, h.path);
-        } catch (error) {
-          if (pr) {
-            await commentOnce(
-              pr.number,
-              `<!-- scheduled-publish-conflict:${h.path} -->`,
-              `⚠️ A Pages CMS save to \`${h.path}\` scheduled for this time conflicts with ` +
-                'an edit already in this PR, so it is still on `main` and the site is not ' +
-                'deploying. Save that page again in the CMS so it no longer clashes (or with ' +
-                '**Publish at** cleared to publish it now), or close this PR to cancel the ' +
-                'earlier edit and schedule the new one on its own.',
-            );
-          }
-          throw error;
+    const main = git(['rev-parse', 'HEAD']).trim();
+    await withWorktree(branch, reuse ? `origin/${branch}` : 'HEAD', async (dir) => {
+      let path = '';
+      try {
+        // An existing branch first takes main (including the commit above),
+        // so each save merges against the version it was made on.
+        if (reuse) syncWithMain(dir, main);
+        for (const h of saves) {
+          path = h.path;
+          const ours = show('HEAD', h.path, dir);
+          writeFile(dir, h.path, mergeFile(ours, h.base, h.stripped, h.path));
+          commit(dir, `${h.subject}\n\nScheduled for ${formatWhen(publishAt, zone)}.`, h.author);
         }
-        writeFile(worktree, h.path, merged);
-        commit(worktree, `${h.subject}\n\nScheduled for ${formatWhen(publishAt, zone)}.`, h.author);
+      } catch (error) {
+        if (pr && error instanceof ConflictError) {
+          await commentOnce(
+            pr.number,
+            `<!-- scheduled-publish-conflict:${path || 'main'}:${main} -->`,
+            `⚠️ A Pages CMS save${path ? ` to \`${path}\`` : ''} scheduled for this time ` +
+              `conflicts with this PR (${error.message}), so it is still on \`main\` and the ` +
+              `site is not deploying. ${CONFLICT_HELP}`,
+          );
+        }
+        throw error;
       }
-    } finally {
-      git(['worktree', 'remove', '--force', worktree]);
-    }
+    });
     slots.push({ publishAt, branch, pr, reuse });
   }
 
@@ -523,14 +611,16 @@ async function run() {
   const now = Date.now();
   await ensureLabel();
 
+  git(['fetch', '--quiet', 'origin', '+refs/heads/*:refs/remotes/origin/*', '--prune']);
+  git(['checkout', '--quiet', '-B', 'main', 'origin/main']);
+  const zone = timezone();
+  // Clear main of held saves first, so due branches sync against clean content.
+  const publishedNow = await intercept(now, zone);
+  await recoverOrphans(zone);
   const published = await publishDue(now);
 
   git(['fetch', '--quiet', 'origin', '+refs/heads/*:refs/remotes/origin/*', '--prune']);
   git(['checkout', '--quiet', '-B', 'main', 'origin/main']);
-  const zone = timezone();
-  const publishedNow = await intercept(now, zone);
-  await recoverOrphans(zone);
-
   writeFile('.', DASHBOARD, dashboard(await scheduledPrs(), zone, now));
   if (commit('.', 'chore(schedule): update Pages CMS scheduled updates list')) {
     git(['push', '--quiet', 'origin', 'HEAD:main']);
