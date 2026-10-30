@@ -137,6 +137,13 @@ Pages CMS commits straight to `main` and can't schedule, so every CMS page has a
 - No API key, no `.env`, no build-time generation step. CSP `connect-src` no longer needs to allow `wakatime.com` — all fetches now go through the same-origin proxy.
 - The hook surfaces `loading` and `error` alongside `data`; `TelemetrySection`'s `StatusLine` shows "FETCHING TELEMETRY ..." while in flight and "LINK SEVERED · DATA UNAVAILABLE" on failure so cold-cache loads and outages are obvious instead of rendering as silent empty panels. Layout reserves space for the visualizations so state transitions don't shift content.
 
+## Dependency updates
+
+Split between two bots so they don't open duplicate PRs:
+
+- **Dependabot** (`.github/dependabot.yml`) handles security updates only, for npm and GitHub Actions. `open-pull-requests-limit: 0` turns off its version updates. Security PRs ignore that limit and are grouped into one PR per ecosystem. Needs "Dependabot security updates" turned on in the repo's Code security settings.
+- **Renovate** (`renovate.json`) handles routine version bumps on Mondays before 6am Europe/London, with lockfile maintenance monthly. Its `vulnerabilityAlerts` is off because Dependabot covers that. Non-major updates are batched into one PR. `three` (0.x, so its minors break), the R3F stack and React each get their own group. Node majors (`.nvmrc`, `@types/node`) and the `packageManager` Yarn bump are disabled: they have to move with `netlify.toml`'s `NODE_VERSION` and the committed `.yarn/releases` binary, so they're done by hand.
+
 ## Code style — Biome
 
 `biome.json` configures Biome 2 as the single linter + formatter (no ESLint, no Prettier). Style: 2-space indent, single JS quotes / double JSX quotes, semis required, trailing commas, 100-col line width, LF endings. Respects `.gitignore` via `vcs.useIgnoreFile`.

@@ -1,0 +1,47 @@
+# Dependabot handles security updates only. Renovate (renovate.json) owns
+# routine version bumps, so version-update PRs are switched off here with
+# `open-pull-requests-limit: 0`. Security PRs ignore that limit; they still
+# pick up the groups, labels and commit prefixes below. They are opened as
+# soon as an advisory lands, and the weekly schedule re-checks anything
+# still open. Needs "Dependabot security updates" enabled under the repo's
+# Settings → Code security.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 0
+    labels:
+      - dependencies
+      - security
+    commit-message:
+      prefix: fix(deps)
+      prefix-development: chore(deps)
+    groups:
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/London
+    open-pull-requests-limit: 0
+    labels:
+      - dependencies
+      - security
+    commit-message:
+      prefix: ci(deps)
+    groups:
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
